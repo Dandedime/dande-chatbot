@@ -1,0 +1,25 @@
+The table named CANDIDATES contains records for all candidates that show up in the tables PACS_TO_CANDIDATES and COMBO_PACS_TO_CANDIDATES. The following list proviedes the column name, data types, and a description of possible values in each column
+
+	1. The column called CYCLE is data type INT and contains the election year
+
+        2. The column named FECCANDID is data type VARCHAR(16777216) and contains the FECCandID of the candidate
+
+	3. The column named CID is data type VARCHAR(16777216) and gives a unique id for candidates that is constant throughout cycles
+
+	4. The column named FIRSTLASTP is data type VARCHAR(16777216) and gives the candidate's name and party indicator in the format first name last name (party indicator). For example the value 'Michael Kerr (3)' is a candidate with first name Michael, last name Kerr, and political party indicator of 3
+
+	5. The column named PARTY is data type VARCHAR(16777216) and has a value indicating the political party the candidate is affiliated with. The possible values are 'D' for Democratic party, 'R' for Republican party, 'I' for Independent, 'L' for Libertarian", '3' for other third party and 'U' for Unknown.
+
+	6. The column named DISTIDRUNFOR is data type VARCHAR(16777216) and gives a four character identifier of the office sought by the candidate. For congressional races, the first two characters are the state and the next two are the district for House candidates and 'S1' or 'S2' for Senate candidates. 'PRES' indicates a presidential candidate.
+
+	7. The column named DISTIDUCRR is data type VARCHAR(16777216) and contains a four character identifier of the office currently held (if any) by the candidate. For House members, the first two characters are the state and the next two are the district. For Senators the first two characters are the state and the last two characters are 'S1' or 'S2'. 'PRES' indicates a presidential candidate. For non-incumbents, this field is blank
+
+	8. The column named CURRCAND is data type VARCHAR(16777216) and indicates whether the candidate is currently running for federal office - 'Y' means yes, otherwise this field is blank
+
+	9. The column named CYCLECAND is data type VARCHAR(16777216) and indicates whether the candidate ever ran for federal office during the cycle in question. Like CURRCAND, 'Y' means yes and blank means no
+
+	10. The column named CRPICO is data type VARCHAR(16777216) and identifies type of candidate - 'I' is incumbent, 'C' is challenger, 'O' is open seat
+
+	11. The column named RECIPECODE is data type VARCHAR(16777216) and provides a two-character code defining the type of candidate. The first character is party ('D' for Democratic, 'R' for Republican, '3' for Independent or third party, 'U' for Unknown.) The second character is 'W' for Winner, 'L' for Loser, 'I' for incumbent, 'C' for Challenger, 'O' for 'Open Seat', and 'N' for Non-incumbent
+
+	12. The column named NOPACS is data type VARCHAR(16777216) and indicates whether candidate has publicly committed to forego contributions from PACs

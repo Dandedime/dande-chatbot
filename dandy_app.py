@@ -1,16 +1,19 @@
 from openai import OpenAI
+from pathlib import Path
 import re
 import streamlit as st
-from prompts import get_system_prompt
+from build_prompts import SystemPrompt
 
 st.title("Andy")
+
+system_prompt = SystemPrompt(instruction_file=Path("prompt_contexts/sql.txt"))
 
 # Initialize the chat messages history
 client = OpenAI(api_key=st.secrets.OPENAI_API_KEY)
 if "messages" not in st.session_state:
     # system prompt includes table information, rules, and prompts the LLM to produce
     # a welcome message to the user.
-    st.session_state.messages = [{"role": "system", "content": get_system_prompt()}]
+    st.session_state.messages = [{"role": "system", "content": system_prompt.system_prompt}]
 
 # Prompt for user input and save
 if prompt := st.chat_input():
@@ -31,7 +34,7 @@ if st.session_state.messages[-1]["role"] != "assistant":
         response = ""
         resp_container = st.empty()
         for delta in client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-0125-preview",
             messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
             stream=True,
         ):

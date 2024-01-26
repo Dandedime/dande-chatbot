@@ -1,0 +1,97 @@
+The table named ELECTION_CONTRIBUTIONS contains records of political donations made by individuals and organizations to local, stte, and federal elections between 1980 and 2023. Each row is a transaction of a contributor giving money to a recipient. It contains information about he contributor including address, name, date of the transaction, and the amount of the transaction as well as basic info about the recipient including name and office sought. The following list provides the column names, data type, and a description of the values in each column
+
+
+	1. The column named CYCLE is data type INT and has values that are four digit numbers that indicates the two-year election cycle during which the contribution was recorded
+
+	2. The column named TRANSACTION_ID is data type VARCHAR(16777216) and has values that are unique ids for each record
+
+	3. The column named TRANSACTION_TYPE is data type VARCHAR(16777216) and has values that are the FEC code for the transaction type
+
+	4. The column named AMOUNT is data type FLOAT and contains the dollar amount of the contribution:
+
+	5. The column named BONICA_CID is data type VARCHAR(16777216) and has values that are a unique id assigned to each contributor
+
+	6. The column named CONTRIBUTOR_NAME is data type VARCHAR(16777216) and gives the complete name of the contributor. If the contributor is an individual the name is in the format last name, first name middle initial (if present):
+
+	7. The column named CONTRIBUTOR_LNAME is data type VARCHAR(16777216) and gives the last name of the contributor if the contributor is an individual. If the contributor is a committee or organization this is blank
+
+	8. The column named CONTRIBUTOR_FNAME is data type VARCHAR(16777216) and contains the first name of the contributo if the contributor is an individual. If the contributor is a committee or organization this is blank
+
+	9. The column named CONTRIBUTOR_MNAME is data type VARCHAR(16777216) and gives the middle name or middle initial of a contributor if the contributor is an individual. It is blank otherwise.
+
+	10. The column named CONTRIBUTOR_SUFFIX is data type VARCHAR(16777216) and contains any suffix to the contributor's name such as 'jr', 'sr', or 'iii'.
+
+	11. The column named CONTRIBUTOR_TITLE is data type ARCHAR(16777216) and contains the title of the contributor if provided, for example 'mr' or 'mrs'
+
+	12. The column named CONTRIBUTOR_FFNAME is data type VARCHAR(16777216) contains the concatenation of CONTRIBUTOR_FNAME, CONTRIBUTOR_MNAME, CONTRIBUTOR_SUFFIX, and CONTRIBUTOR_TITLE
+
+	13. The column named CONTRIBUTOR_TYPE is data type VARCHAR(16777216) and takes on value of 'I' if the contributor is an individual and 'C' if the contributor is a committee or organization
+
+	14. The column named CONTRIBUTOR_GENDER is data type VARCHAR(16777216) and takes a value of 'M' if the contributor is male, 'F' if the contributor is female, 'U' if the gender is unknown, and is blank if the contributor CONTRIBUTOR_TYPE is 'I' or 'C'
+
+	15. The columnn named CONTRIBUTOR_ADDRESS is data type VARCHAR(16777216) and contains the street address of the contributor
+
+	16. The column named CONTRIBUTOR_CITY is data type VARCHAR(16777216) and contains the name of the city or municapility of the contributor:
+
+	17. The column named CONTRIBUTOR_STATE is data typeVARCHAR(16777216) and contains the contributor's two-letter state abbreviation
+
+	18. The column named CONTRIBUTOR_ZIPCODE is data type VARCHAR(16777216) and contains the contributor's 5 or 9 digit zip-code
+
+	19. The column named CONTRIBUTOR_OCCUPATION is data type VARCHAR(16777216) and gives the contributor's occupational title:
+
+	20. The column named CONTRIBUTOR_EMPLOYER is data type VARCHAR(16777216) and provides the contributor's self-reported employer
+
+    	21. The column named OCC_STANDARDIZED is data type VARCHAR(1677216) and contains a standardized version of the contributor's occupational title. For example if the contributor reported their title as 'lawyer' this may be standardized to 'attorney' in this column
+		
+	22. The column named IS_CORP is data type VARCHAR(16777216). It has a value of 'corp' if the contribution was made by a corporate entity or q trade organization and is blank otherwise
+
+	23. The column named RECIPIENT_NAME is data type VARCHAR(16777216) and gives the name of the recipient of the contribution in the format last name, first name middle iniitial (if present)
+
+	24. The column named BONICA_RID is data type VARCHAR(16777216) and contains a unique id for the recipient
+
+	25. The column named RECIPIENT_PARTY is data type VARCHAR(16777216) and indicates the party of the recipient. The value is '100' for the Democratic party, '200' for the Republican party, and '328' for Independent
+
+	26. The column named RECIPIENT_TYPE is data type VARCHAR(16777216) and gives the type of the recipient. The value is 'CAND' if the recipient is a candidate and 'COMM' if it is a PAC, organization, or party committee
+
+	27. The column named RECIPIENT_STATE is data type VARCHAR(16777216) and has values that are the two-letter state abbreviation for the recipient
+		Two-letter state abbreviation of the recipients
+
+	28. The column named SEAT is data type VARCHAR(16777216) and indiciates the elected office sought by the candidate. The value indiciates if it is a state or federal seat and which seat. Some examples of possible values are 'federal:house', 'state:upper' for state senate, 'state:governor' for state governor, and 'federal:president' for president.
+
+	29. The column named ELECTION_TYPE is data type VARCHAR(16777216) and has a value of 'P' if the election type is a primary election and 'G' if it is a general election
+
+	30. The column named GIS_CONFIDENCE is data type FLOAT and provides a measure of confidence in the accuracy of the values in the LATITUDE and LONGITUDE columns. The max value is 1 and the min value is 0
+
+	31. The column named CONTRIBUTOR_DISTRICT_90S is data type VARCHAR(16777216) and contains the contributor's geocode mapping onto a congressional district with respect to boundaries for 1992-2000. The geocodes are formated as the two-letter state abbreviation follow by a two digit number indicating the district number. For example 'CA32' repesents the 32nd district of California
+
+	32. The column named CONTRIBUTOR_DISTRICT_00S is data type VARCHAR(16777216) and contains the contributor's congressional district geocode with respect to bunadaries for 2002-2010
+
+	33. The column named CONTRIBUTOR_DISTRICT_10S is data type VARCHAR(16777216) and contains the contributor's congressional district geocode with respect to boundaries after 2010
+
+	34. The column named CENSUSTRACT is data type VARCHAR(16777216) and gives the id of the contributor's census tract
+ 
+	35. The column named EFEC_MEMO is data type VARCHAR(16777216) and contains the value of the memo field from the FEC electronic filings if present
+
+	36. The column named EFEC_MEMO2 is data type VARCHAR(16777216) and contains the value of the auxiliary mem field from the FEC electronic filings if present
+
+	37. The colummn named EFEC_TRANSACTION_ID_ORIG is data type VARCHAR(16777216) and gives the original transaction id from the FEC electronic filings
+
+	38. The column named BK_REF_TRANSACTION_ID is data type VARCHAR(16777216) and indicates whether the contribution record previously appeared in the database
+
+	39. The colummn named EFEC_ORG_ORIG is data type VARCHAR(16777216) and gives the original recipient name from the FEC electronic filings
+
+	40. The column named EFEC_COMID_ORIG is data type VARCHAR(16777216) and containss the original committee id from the FEC electronic filings
+
+	41. The column named EFEC_FORM_TYPE is data type VARCHAR(16777216) and has values indicating the form type from FEC electronic filings
+
+        42. The column named EXCLUDED_FROM_SCALING is data type BOOLEAN and indicates if the contribution was excluded from the scaling algorithm used to compute CFscores
+		
+	43. The column named CONTRIBUTOR_CFSCORE is data type FLOAT and gives the contributor's ideal CFscore. The CFscore gives a measure of the entity's ideology
+
+	44. The column named CANDIDATE_CFSCORE is data type FLOAT and gives the recipient's ideal CFscore
+
+	45. The column named DATE is data type DATE and gives the transaction date of the contribution
+
+	46. The column named LATITUDE is data type FLOAT and gives the latitude of the contributor
+
+	47. The column named LONGITUDE s data type FLOAT and gives the longitude of the contributor

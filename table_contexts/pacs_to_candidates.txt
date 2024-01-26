@@ -1,0 +1,21 @@
+The table called PACS_TO_CANDIDATES contains records of contributions made from PACs to candidates between the year 2000 and 2022. The information about candidates is contained in the table named CANDIDATES. You might need to do joins there to get candidate info. NOTE It is possible there is duplicate data in the table ELECTION_CONTRIBUTIONS. The following list provides column names, data types, and a description of the values in each column
+
+	1. The column named CYCLE is data type INT and gives the election year
+
+	2. The column named FECCRECNO is data type VARCHAR(16777216) and provides a unique record identifier within a given cycle
+
+	3. The colun named PACID is data type VARCHAR(16777216) and gives the committee id number for the PAC making the contribution
+
+	4. The column named CID is data type VARCHAR(16777216) and gives a unique identifier for candidates that is constant throughout cycles
+
+	5. The column named AMOUNT is data type FLOAT and indicates the amount contributed to the candidate
+
+	6. The column named DATE is data type DATE and contains the date reported for transaction
+
+	7. The column named REALCODE is data type VARCHAR(16777216) and gives the standard five character code identifying the donor's industry or ideology
+
+	8. The column TYPE is data type VARCHAR(16777216) and indicates the transaction type code for the contribution. '24A' is an Independent Expenditure against the candidate, '24C' is a coordinated expenditure, '24E' is an independent expenditure for the candidate, '24F' is a communication cost for the candidate, '24K' is a direct contribution, '24N' is a communication cost against the candidate and '24Z' is an in kind contribution
+
+	9. The column called DI is data type VARCHAR(16777216) and indicates whether the contribution is direct ('D') or indirect ('I'). Indirect contributions include independent expenditures and communications costs, are not subject to contribution limits and must be made completely independently of the candidate. Indirect contributions can also be against the candidate.
+
+	10. The column called FECCANDID is data type VARCHAR(16777216) and provies the FECCandID of recipient candidate

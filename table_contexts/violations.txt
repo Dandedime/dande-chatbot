@@ -1,0 +1,13 @@
+The table named VIOLATIONS contains records of violations committed by companies between 2000 and 2023. Each record gives the company, offense type, year, agency against which the violation or offense was committed, amount of the penalty, and the name of the parent company. The following list provides the column names, data types, and a description of the possible values in each column
+
+	1. The column called COMPANY is data type VARCHAR(16777216) and contains the name of the company committing the violation
+
+        2. The column named PRIMARY_OFFENSE_TYPE is data type VARCHAR(16777216) and contains a description of the type of offense. For example "workplace safety or health violation"
+
+        3. The column named YEAR is data type INT and gives the year of the violation
+
+        4. The column named AGENCY is data type VARCHAR(16777216) and names the agency that filed the violation
+
+        5. The column named AMOUNT is data type FLOAT and gives the amount of the penalty in dollars
+
+        6. The column named PARENT_COMPANY is data type VARCHAR(16777216) and provies the name of the parent company. If there is no parent company this value is the same as COMPANY
