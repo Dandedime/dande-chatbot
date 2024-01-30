@@ -1,26 +1,18 @@
-from openai import OpenAI
-from pathlib import Path
-import re
 import streamlit as st
-from build_prompts import SystemPrompt
+from conversation import SQLConversation
 
 st.title("Andy")
 
-system_prompt = SystemPrompt(instruction_file=Path("prompt_contexts/sql.txt"))
+# Initialize the conversation
+if "conversation" not in st.session_state:
+    st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY)#, model="gpt-3.5-turbo")
 
-# Initialize the chat messages history
-client = OpenAI(api_key=st.secrets.OPENAI_API_KEY)
-if "messages" not in st.session_state:
-    # system prompt includes table information, rules, and prompts the LLM to produce
-    # a welcome message to the user.
-    st.session_state.messages = [{"role": "system", "content": system_prompt.system_prompt}]
-
-# Prompt for user input and save
+# Ask for user input
 if prompt := st.chat_input():
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.conversation.conversation_history.append({"role": "user", "content": prompt})
 
-# display the existing chat messages
-for message in st.session_state.messages:
+# Display all messages
+for message in st.session_state.conversation.conversation_history.all_messages:
     if message["role"] == "system":
         continue
     with st.chat_message(message["role"]):
@@ -28,26 +20,7 @@ for message in st.session_state.messages:
         if "results" in message:
             st.dataframe(message["results"])
 
-# If last message is not from assistant, we need to generate a new response
-if st.session_state.messages[-1]["role"] != "assistant":
+# Ask the assistant for a response
+if st.session_state.conversation.conversation_history[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
-        response = ""
-        resp_container = st.empty()
-        for delta in client.chat.completions.create(
-            model="gpt-4-0125-preview",
-            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-            stream=True,
-        ):
-            response += (delta.choices[0].delta.content or "")
-            resp_container.markdown(response)
-
-
-        message = {"role": "assistant", "content": response}
-        # Parse the response for a SQL query and execute if available
-        sql_match = re.search(r"```sql\n(.*)\n```", response, re.DOTALL)
-        if sql_match:
-            sql = sql_match.group(1)
-            conn = st.connection("snowflake")
-            message["results"] = conn.query(sql)
-            st.dataframe(message["results"])
-        st.session_state.messages.append(message)
+        st.session_state.conversation.write_full_response(st.empty())
