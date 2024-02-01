@@ -1,8 +1,26 @@
-import re
+import streamlit as st
+from conversation import SQLConversation
 
-def extract_sql(response):
-    """Extract sql query from response text"""
-    sql_match = re.search(r"```sql\n(.*)\n```", response, re.DOTALL)
-    if sql_match:
-        sql = sql_match.group(1)
-        return sql
+def write_full_response(conversation: SQLConversation):
+    """Create the full response, including query and explanation, results of the query, and the answer to the original question"""
+    query_explanation = conversation.write_query()
+    response = write_response(query_explanation, conversation)
+    query, results = conversation.execute_query(response)
+    if results is not None:
+        user_message = conversation.history.user_messages[-1]
+        st.dataframe(results)
+        _ = write_response(conversation.answer(user_message, query, results), conversation)
+
+def write_response(generator, conversation, results=None):
+    """Construct response from the generator and append to conversation history"""
+    response = ""
+    resp_container = st.empty()
+    for chunk in generator:
+        response += (chunk.choices[0].delta.content or "")
+        resp_container.markdown(response)
+    response_msg = {"role": "assistant", "content": response}
+    if results is not None:
+        response_msg["results"] = results
+    conversation.history.append(response_msg)
+    return response
+
