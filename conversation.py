@@ -1,7 +1,7 @@
 from pathlib import Path
 from openai import OpenAI
 from utils import extract_sql
-from build_prompts import SQLPrompt
+from build_prompts import SystemPrompt, SQLPrompt 
 
 import streamlit as st
 
@@ -24,23 +24,10 @@ class SQLConversation(ConversationOpenAI):
         super().__init__(api_key, model, memory_window)
         self.db_conn = db_conn
 
-        self.answer_prompt = """Given the folowing user question, the sql query, and the results of running the query, construct an answer to the question
-
-        user question: {question}
-        query: {query}
-        results: {results}
-        """
-
-        self.error_prompt = """Given the following user question, sql query, and error thrown by running the query, first inform the user
-        there was an error executing the query and then describe the error. Then suggest possible corrections to this query, and if something 
-        in the question or query is unclear ask for further clarification from the user:
-        
-        user question: {question}
-        query: {query}
-        error: {error}
-        """
-        self.error_prompt = '\n'.join([line.strip() for line in self.error_prompt.strip().split('\n')])
-
+        self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
+        self.error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
+        self.empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
+                                                   
         self.system_prompt = SQLPrompt(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
 
         self.conversation_history = ConversationHistory(self.system_prompt, recent_window=memory_window)
@@ -64,12 +51,17 @@ class SQLConversation(ConversationOpenAI):
     def answer(self, user_message, query, results):
         """Construct an answer to the question in the user_message given the sql query in results of the query"""
         question = user_message["content"]
-        content = self.answer_prompt.format(question=question, query=query, results=results)
+        content = self.answer_prompt.general_instructions.format(question=question, query=query, results=results)
         return self.respond([{"role": "system", "content": content}])
     
     def error(self, user_message, query, status):
         question = user_message["content"]
-        content = self.error_prompt.format(question=question, query=query, error=status)
+        content = self.error_prompt.general_instructions.format(question=question, query=query, error=status)
+        return self.respond([{"role": "system", "content": content}])
+    
+    def empty(self, user_message, query, results):
+        question = user_message["content"]
+        content = self.empty_prompt.general_instructions.format(question=question, query=query, results=results)
         return self.respond([{"role": "system", "content": content}])
 
     def _write_response(self, generator, resp_container):
@@ -93,6 +85,8 @@ class SQLConversation(ConversationOpenAI):
             self._write_response(self.answer(user_message, query, results), st.empty())
         elif results is not None and results.empty:
             print(2)
+            user_message = self.conversation_history.user_messages[-1]
+            self._write_response(self.empty(user_message, query, results), st.empty())
         if status is not None:
             print(3)
             user_message = self.conversation_history.user_messages[-1]

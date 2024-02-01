@@ -41,9 +41,17 @@ class TableContext:
         return context
 
 class SystemPrompt:
-    def __init__(self, instruction_file: Path, table_files: Optional[List[Path]] = None):
+    def __init__(self, instruction_file: Path):
         with open(instruction_file, "r") as ifile:
             self.general_instructions = ifile.read()
+    
+    @classmethod
+    def load(cls, instruction_file: Path):
+        return cls(instruction_file)
+        
+class SQLPrompt(SystemPrompt):
+    def __init__(self, instruction_file: Path, table_files: Optional[List[Path]] = None):
+        super().__init__(instruction_file)
 
         if table_files is None:
             table_files = [Path(f) for f in glob("table_contexts/*.txt")]
@@ -58,5 +66,5 @@ class SystemPrompt:
 # do `streamlit run prompts.py` to view the initial system prompt in a Streamlit app
 if __name__ == "__main__":
     st.header("System prompt for Andy")
-    prompt = SystemPrompt(Path("prompt_contexts/sql.txt"))
+    prompt = SQLPrompt(Path("prompt_contexts/sql.txt"))
     st.markdown(prompt.system_prompt)
