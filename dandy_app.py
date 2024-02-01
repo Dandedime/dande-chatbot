@@ -5,7 +5,7 @@ st.title("Andy")
 
 # Initialize the conversation
 if "conversation" not in st.session_state:
-    st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY)#, model="gpt-3.5-turbo")
+    st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY, model="gpt-3.5-turbo")
 
 # Ask for user input
 if prompt := st.chat_input():
@@ -23,4 +23,4 @@ for message in st.session_state.conversation.conversation_history.all_messages:
 # Ask the assistant for a response
 if st.session_state.conversation.conversation_history[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
-        st.session_state.conversation.write_full_response(st.empty())
+        st.session_state.conversation.write_full_response()

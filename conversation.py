@@ -3,6 +3,7 @@ from openai import OpenAI
 from utils import extract_sql
 from build_prompts import SQLPrompt
 
+import streamlit as st
 
 class ConversationOpenAI:
     def __init__(self, api_key, model="gpt-4-0125-preview", memory_window=5):
@@ -78,27 +79,25 @@ class SQLConversation(ConversationOpenAI):
             response += (chunk.choices[0].delta.content or "")
             resp_container.markdown(response)
         self.conversation_history.append({"role": "assistant", "content": response})
-        return response, resp_container
+        return response
 
-    def write_full_response(self, resp_container):
+    def write_full_response(self):
         """Create the full response, including query and explanation, results of the query, and the answer to the original question"""
-        response, resp_container = self._write_response(self.write_query(self.conversation_history.recent_conversation), resp_container)
-        response_msg = {"role": "assistant", "content": response}
+        response = self._write_response(self.write_query(self.conversation_history.recent_conversation), st.empty())
         query, results, status = self.execute_query(response)
-        
+
         if results is not None and not results.empty: 
             print(1)
+            st.dataframe(results)
             user_message = self.conversation_history.user_messages[-1]
-            response_msg["results"] = results
-            answer, _ = self._write_response(self.answer(user_message, query, results), resp_container)
+            self._write_response(self.answer(user_message, query, results), st.empty())
         elif results is not None and results.empty:
-           print(2)
+            print(2)
         if status is not None:
             print(3)
             user_message = self.conversation_history.user_messages[-1]
-            answer, _ = self._write_response(self.error(user_message, query, status), resp_container)
-            
-            
+            self._write_response(self.error(user_message, query, status), st.empty())
+
 
 class ConversationHistory:
     def __init__(self, system_prompt, recent_window=5):
