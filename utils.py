@@ -19,7 +19,6 @@ def write_full_response(conversation: SQLConversation):
         _ = write_response(conversation.empty(user_message, query, results), st.empty())
     if status is not None:
         print(3)
-        print(1)
         user_message = conversation.history.user_messages[-1]
         _ = write_response(conversation.error(user_message, query, status), st.empty())
 
@@ -34,6 +33,7 @@ def write_response(generator, conversation, results=None):
     response_msg = {"role": "assistant", "content": response}
     if results is not None:
         response_msg["results"] = results
+    print(type(conversation.history))
     conversation.history.append(response_msg)
     return response
 
