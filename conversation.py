@@ -1,8 +1,7 @@
 from pathlib import Path
 from openai import OpenAI
-from utils import extract_sql
 from build_prompts import SystemPrompt, SQLPrompt 
-
+import re
 import streamlit as st
 
 class ConversationOpenAI:
