@@ -1,9 +1,7 @@
 from pathlib import Path
 from openai import OpenAI
-from build_prompts import SystemPrompt
-
+from build_prompts import SystemPrompt, SQLPrompt 
 import re
-
 
 class ConversationOpenAI:
     def __init__(self, api_key, model="gpt-4-0125-preview", system_prompt=None, memory_window=5):
@@ -25,13 +23,11 @@ class SQLConversation(ConversationOpenAI):
     def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
-        self.answer_prompt = """Given the folowing user question, the sql query, and the results of running the query, construct an answer to the question
-
-        user question: {question}
-        query: {query}
-        results: {results}
-    """
-        self.system_prompt = SystemPrompt(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
+        self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
+        self.error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
+        self.empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
+                                                   
+        self.system_prompt = SQLPrompt(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
 
         super().__init__(api_key, model, system_prompt=self.system_prompt, memory_window=memory_window)
 
@@ -43,14 +39,28 @@ class SQLConversation(ConversationOpenAI):
         """Execute the sql query in the response text if there is one"""
         query = self._extract_sql(response)
         if query is not None:
-            return query, self.db_conn.query(query)
+            try:
+                res = self.db_conn.query(query)
+                return query, res, None
+            except Exception as e:
+                return query, None, e
         else:
-            return None, None
+            return None, None, None
 
     def answer(self, user_message, query, results):
-        """Construct an answer to the question in the user_message give the sql query in results of the query"""
+        """Construct an answer to the question in the user_message given the sql query in results of the query"""
         question = user_message["content"]
-        content = self.answer_prompt.format(question=question, query=query, results=results)
+        content = self.answer_prompt.general_instructions.format(question=question, query=query, results=results)
+        return self.respond([{"role": "system", "content": content}])
+    
+    def error(self, user_message, query, status):
+        question = user_message["content"]
+        content = self.error_prompt.general_instructions.format(question=question, query=query, error=status)
+        return self.respond([{"role": "system", "content": content}])
+    
+    def empty(self, user_message, query, results):
+        question = user_message["content"]
+        content = self.empty_prompt.general_instructions.format(question=question, query=query, results=results)
         return self.respond([{"role": "system", "content": content}])
 
     @staticmethod
