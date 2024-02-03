@@ -24,12 +24,7 @@ class SQLConversation(ConversationOpenAI):
     def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
-        #self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
-        self.answer_prompt = """Given the folowing user question, the sql query, and the results of running the query, construct an answer to the question
-
-user question: {question}
-query: {query}
-results: {results}"""
+        self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
         self.error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
         self.empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
                                                    
