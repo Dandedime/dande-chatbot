@@ -2,7 +2,6 @@ from pathlib import Path
 from openai import OpenAI
 from build_prompts import SystemPrompt, SQLPrompt 
 import re
-import streamlit as st
 
 class ConversationOpenAI:
     def __init__(self, api_key, model="gpt-4-0125-preview", system_prompt=None, memory_window=5):
