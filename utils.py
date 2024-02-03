@@ -8,32 +8,30 @@ def write_full_response(conversation: SQLConversation):
     query, results, status = conversation.execute_query(response)
 
     if results is not None and not results.empty: 
-        print(1)
         user_message = conversation.history.user_messages[-1]
         st.dataframe(results)
-        _ = write_response(conversation.answer(user_message, query, results), st.empty())
+        _ = write_response(conversation.answer(user_message, query, results), conversation)
     elif results is not None and results.empty:
-        print(2)
         user_message = conversation.history.user_messages[-1]
         st.dataframe(results)
-        _ = write_response(conversation.empty(user_message, query, results), st.empty())
+        _ = write_response(conversation.empty(user_message, query, results), conversation)
     if status is not None:
-        print(3)
         user_message = conversation.history.user_messages[-1]
-        _ = write_response(conversation.error(user_message, query, status), st.empty())
+        _ = write_response(conversation.error(user_message, query, status), conversation)
 
 
 def write_response(generator, conversation, results=None):
     """Construct response from the generator and append to conversation history"""
     response = ""
     resp_container = st.empty()
+    print(results)
     for chunk in generator:
         response += (chunk.choices[0].delta.content or "")
         resp_container.markdown(response)
     response_msg = {"role": "assistant", "content": response}
     if results is not None:
         response_msg["results"] = results
-    print(type(conversation.history))
+    #print(type(conversation.history))
     conversation.history.append(response_msg)
     return response
 
