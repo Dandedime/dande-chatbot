@@ -23,11 +23,11 @@ class SQLConversation(ConversationOpenAI):
     def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
-        self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
-        self.error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
-        self.empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
+        self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
+        self.error_prompt = SystemPrompt.from_file(Path("prompt_contexts/error.txt"))
+        self.empty_prompt = SystemPrompt.from_file(Path("prompt_contexts/empty.txt"))
                                                    
-        self.system_prompt = SQLPrompt(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
+        self.system_prompt = SQLPrompt.from_file(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
 
         super().__init__(api_key, model, system_prompt=self.system_prompt, memory_window=memory_window)
 
