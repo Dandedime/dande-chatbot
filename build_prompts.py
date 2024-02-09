@@ -14,7 +14,7 @@ class TableContext:
             self.table_description = ifile.read()
 
         self.context = self._build_table_context()
-        self.summary = self.table_description.split("\n")[0]
+        self.summary = self.table_description.split("\n")[0].split("The following list provides")[0]
 
     def _build_table_context(self):
         table = self.table_name.split(".")
@@ -56,7 +56,7 @@ class TableSelectionPrompt(SystemPrompt):
     def __init__(self, prompt: str, table_contexts: List[TableContext]):
         self.table_contexts = table_contexts
         super().__init__(prompt.format(table_summaries="\n\n".join([table.summary for table in self.table_contexts])))
-
+        
     @classmethod
     def from_file(cls, instruction_file: Path=Path("prompt_contexts/table_selection.txt"), table_files: Optional[List[Path]] = None):
         with open(instruction_file, "r") as ifile:
@@ -67,21 +67,24 @@ class TableSelectionPrompt(SystemPrompt):
         return cls(prompt, table_contexts)
 
     def full_context(self, selected_table_idxs):
-        return "\n\n".join([self.table_contexts[i].context for i in selected_table_idxs)
+        return "\n\n".join([self.table_contexts[i].context for i in selected_table_idxs])
 
 
         
 class SQLPrompt(SystemPrompt):
     def __init__(self, prompt: str, table_selection: TableSelectionPrompt):
-        self.table_selection = table_selection
         super().__init__(prompt)
+        self.table_selection = table_selection
+        self.system_prompt = self.build_system_prompt(list(range(len(table_selection.table_contexts))))
 
     def build_system_prompt(self, selected_table_idxs = None):
-        return self.general_instructions.format(num_tables=len(self.table_contexts), tables_context=self.table_selection.full_context(selected_table_idxs))
+        if not selected_table_idxs:
+            selected_table_idxs = []
+        return self.general_instructions.format(num_tables=len(selected_table_idxs), tables_context=self.table_selection.full_context(selected_table_idxs))
 
     @classmethod
     def from_file(cls, instruction_file: Path, table_files: Optional[List[Path]] = None):
-        table_selection = TableSelectionPrompt.from_file(table_file=table_files)
+        table_selection = TableSelectionPrompt.from_file(table_files=table_files)
         with open(instruction_file, "r") as ifile:
             prompt = ifile.read()
         return cls(prompt, table_selection)

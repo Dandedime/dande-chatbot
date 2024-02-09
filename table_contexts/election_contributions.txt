@@ -41,7 +41,7 @@ The table named ELECTION_CONTRIBUTIONS contains records of political donations m
 
 	20. The column named CONTRIBUTOR_EMPLOYER is data type VARCHAR(16777216) and provides the contributor's self-reported employer
 
-    	21. The column named OCC_STANDARDIZED is data type VARCHAR(1677216) and contains a standardized version of the contributor's occupational title. For example if the contributor reported their title as 'lawyer' this may be standardized to 'attorney' in this column
+    21. The column named OCC_STANDARDIZED is data type VARCHAR(1677216) and contains a standardized version of the contributor's occupational title. For example if the contributor reported their title as 'lawyer' this may be standardized to 'attorney' in this column
 		
 	22. The column named IS_CORP is data type VARCHAR(16777216). It has a value of 'corp' if the contribution was made by a corporate entity or q trade organization and is blank otherwise
 
@@ -84,7 +84,7 @@ The table named ELECTION_CONTRIBUTIONS contains records of political donations m
 
 	41. The column named EFEC_FORM_TYPE is data type VARCHAR(16777216) and has values indicating the form type from FEC electronic filings
 
-        42. The column named EXCLUDED_FROM_SCALING is data type BOOLEAN and indicates if the contribution was excluded from the scaling algorithm used to compute CFscores
+    42. The column named EXCLUDED_FROM_SCALING is data type BOOLEAN and indicates if the contribution was excluded from the scaling algorithm used to compute CFscores
 		
 	43. The column named CONTRIBUTOR_CFSCORE is data type FLOAT and gives the contributor's ideal CFscore. The CFscore gives a measure of the entity's ideology
 

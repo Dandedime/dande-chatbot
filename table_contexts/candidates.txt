@@ -1,8 +1,8 @@
-The table named CANDIDATES contains records for all candidates that show up in the tables PACS_TO_CANDIDATES and COMBO_PACS_TO_CANDIDATES. The following list proviedes the column name, data types, and a description of possible values in each column
+The table named CANDIDATES contains records for all candidates that show up in the tables PACS_TO_CANDIDATES and COMBO_PACS_TO_CANDIDATES. The following list provides the column name, data types, and a description of possible values in each column
 
 	1. The column called CYCLE is data type INT and contains the election year
 
-        2. The column named FECCANDID is data type VARCHAR(16777216) and contains the FECCandID of the candidate
+    2. The column named FECCANDID is data type VARCHAR(16777216) and contains the FECCandID of the candidate
 
 	3. The column named CID is data type VARCHAR(16777216) and gives a unique id for candidates that is constant throughout cycles
 
