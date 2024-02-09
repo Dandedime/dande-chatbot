@@ -1,4 +1,4 @@
-The table named VIOLATIONS contains records of violations committed by companies between 2000 and 2023. Each record gives the company, offense type, year, agency against which the violation or offense was committed, amount of the penalty, and the name of the parent company. The following list provides the column names, data types, and a description of the possible values in each column
+The table named <tableName>DATADIME1.PUBLIC.VIOLATIONS<\tableName> contains records of violations committed by companies between 2000 and 2023. Each record gives the company, offense type, year, agency against which the violation or offense was committed, amount of the penalty, and the name of the parent company. The following list provides the column names, data types, and a description of the possible values in each column
 
 	1. The column called COMPANY is data type VARCHAR(16777216) and contains the name of the company committing the violation
 

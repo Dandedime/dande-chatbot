@@ -1,4 +1,4 @@
-The table called PACS_TO_CANDIDATES contains records of contributions made from PACs to candidates between the year 2000 and 2022. The information about candidates is contained in the table named CANDIDATES. You might need to do joins there to get candidate info. NOTE It is possible there is duplicate data in the table ELECTION_CONTRIBUTIONS. The following list provides column names, data types, and a description of the values in each column
+The table called <tableName>DATADIME1.PUBLIC.PACS_TO_CANDIDATES<\tableName> contains records of contributions made from PACs to candidates between the year 2000 and 2022. The information about candidates is contained in the table named CANDIDATES. You might need to do joins there to get candidate info. NOTE It is possible there is duplicate data in the table ELECTION_CONTRIBUTIONS. The following list provides column names, data types, and a description of the values in each column
 
 	1. The column named CYCLE is data type INT and gives the election year
 

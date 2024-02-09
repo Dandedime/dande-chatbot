@@ -30,13 +30,7 @@ class TableContext:
             ]
         )
         context = f"""
-    Here is the table name <tableName> {'.'.join(table)} </tableName>
-
     <tableDescription>{self.table_description}</tableDescription>
-
-    Here are the columns of the {'.'.join(table)}
-
-    <columns>\n\n{columns}\n\n</columns>
         """
         return context
 

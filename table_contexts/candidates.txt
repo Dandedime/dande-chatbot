@@ -1,4 +1,5 @@
-The table named CANDIDATES contains records for all candidates that show up in the tables PACS_TO_CANDIDATES and COMBO_PACS_TO_CANDIDATES. The following list proviedes the column name, data types, and a description of possible values in each column
+The table named <tableName>DATADIME1.PUBLIC.CANDIDATES<\tableName> contains records for all candidates that show up in the tables PACS_TO_CANDIDATES and COMBO_PACS_TO_CANDIDATES. The following list proviedes the column name, data types, and a description of possible values in each column
+
 
 	1. The column called CYCLE is data type INT and contains the election year
 

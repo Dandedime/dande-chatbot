@@ -1,4 +1,4 @@
-The table named ELECTION_CONTRIBUTIONS contains records of political donations made by individuals and organizations to local, stte, and federal elections between 1980 and 2023. Each row is a transaction of a contributor giving money to a recipient. It contains information about he contributor including address, name, date of the transaction, and the amount of the transaction as well as basic info about the recipient including name and office sought. The following list provides the column names, data type, and a description of the values in each column
+The table named <tableName>DATADIME1.PUBLIC.ELECTION_CONTRIBUTIONS<\tableName> contains records of political donations made by individuals and organizations to local, stte, and federal elections between 1980 and 2023. Each row is a transaction of a contributor giving money to a recipient. It contains information about he contributor including address, name, date of the transaction, and the amount of the transaction as well as basic info about the recipient including name and office sought. The following list provides the column names, data type, and a description of the values in each column
 
 
 	1. The column named CYCLE is data type INT and has values that are four digit numbers that indicates the two-year election cycle during which the contribution was recorded
@@ -21,7 +21,7 @@ The table named ELECTION_CONTRIBUTIONS contains records of political donations m
 
 	10. The column named CONTRIBUTOR_SUFFIX is data type VARCHAR(16777216) and contains any suffix to the contributor's name such as 'jr', 'sr', or 'iii'.
 
-	11. The column named CONTRIBUTOR_TITLE is data type ARCHAR(16777216) and contains the title of the contributor if provided, for example 'mr' or 'mrs'
+	11. The column named CONTRIBUTOR_TITLE is data type VARCHAR(16777216) and contains the title of the contributor if provided, for example 'mr' or 'mrs'
 
 	12. The column named CONTRIBUTOR_FFNAME is data type VARCHAR(16777216) contains the concatenation of CONTRIBUTOR_FNAME, CONTRIBUTOR_MNAME, CONTRIBUTOR_SUFFIX, and CONTRIBUTOR_TITLE
 
@@ -33,7 +33,7 @@ The table named ELECTION_CONTRIBUTIONS contains records of political donations m
 
 	16. The column named CONTRIBUTOR_CITY is data type VARCHAR(16777216) and contains the name of the city or municapility of the contributor:
 
-	17. The column named CONTRIBUTOR_STATE is data typeVARCHAR(16777216) and contains the contributor's two-letter state abbreviation
+	17. The column named CONTRIBUTOR_STATE is data type VARCHAR(16777216) and contains the contributor's two-letter state abbreviation
 
 	18. The column named CONTRIBUTOR_ZIPCODE is data type VARCHAR(16777216) and contains the contributor's 5 or 9 digit zip-code
 
