@@ -1,4 +1,4 @@
-Given the folowing user question, the sql query, and the results of running the query, inform the user that the query
+Given the folowing user question, the query, and the results of running the query, inform the user that the query
 returned no results. Then provide an explanation for why it returned no results, and suggest a way the query might
 be improved to make it return results.
 

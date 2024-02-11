@@ -1,13 +1,19 @@
 import streamlit as st
-from conversation import SQLConversation
 from utils import write_full_response, select_tables, write_response
+from conversation import SQLConversation, Neo4jConversation
+from neo4j_connection import Neo4jConnection
 
 st.title("Andy")
 TABLE_IDX_DICT = {"VIOLATIONS":0, "CANDIDATES":1, "ELECTION_CONTRIBUTIONS": 2, "PACS_TO_CANDIDATES": 3}
 
 # Initialize the conversation
 if "conversation" not in st.session_state:
-    st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY, model="gpt-3.5-turbo") #model="gpt-4-0125-preview"
+    #st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY, model="gpt-3.5-turbo")
+    st.session_state.conversation = \
+        Neo4jConversation(Neo4jConnection(st.secrets.neo4j.uri,
+                                          st.secrets.neo4j.user,
+                                          st.secrets.neo4j.pwd),
+                          api_key=st.secrets.OPENAI_API_KEY, model="gpt-3.5-turbo")
 
 # Ask for user input
 if prompt := st.chat_input():

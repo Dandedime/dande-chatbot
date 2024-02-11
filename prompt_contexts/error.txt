@@ -1,4 +1,4 @@
-Given the following user question, sql query, and error thrown by running the query, first inform the user there was an error executing
+Given the following user question, query, and error thrown by running the query, first inform the user there was an error executing
 the query and then describe the error. Then suggest possible corrections to this query, and if something  in the question or query is 
 unclear ask for further clarification from the user:
 

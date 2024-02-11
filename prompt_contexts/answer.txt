@@ -1,4 +1,4 @@
-Given the recent conversation and the following sql query and results of running the query, construct an answer to the most recent question from the user in the conversation for which the query was written
+Given the recent conversation and the following query and results of running the query, construct an answer to the most recent question from the user in the conversation for which the query was written
 
 query: {query}
 results: {results}
