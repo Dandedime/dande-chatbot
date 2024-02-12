@@ -41,3 +41,8 @@ def write_response(generator, conversation, results=None):
     conversation.history.append(response_msg)
     return response
 
+def write_message(message, conversation):
+    resp_container = st.empty()
+    resp_container.markdown(message)
+    response_msg = {"role": "assistant", "content": message}
+    conversation.history.append(response_msg)
