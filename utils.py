@@ -1,9 +1,10 @@
 import streamlit as st
 from conversation import SQLConversation
+import string
 
-def write_full_response(conversation: SQLConversation):
+def write_full_response(conversation: SQLConversation, table_selection = None):
     """Create the full response, including query and explanation, results of the query, and the answer to the original question"""
-    query_explanation = conversation.write_query()
+    query_explanation = conversation.write_query(table_selection)
     response = write_response(query_explanation, conversation)
     query, results, status = conversation.execute_query(response)
 
@@ -18,6 +19,14 @@ def write_full_response(conversation: SQLConversation):
         user_message = conversation.history.user_messages[-1]
         _ = write_response(conversation.error(user_message, query, status), conversation)
 
+def select_tables(conversation: SQLConversation):
+    user_message = conversation.history.user_messages[-1]
+    query_explanation = conversation.select_tables(user_message)
+    response = ""
+    for chunk in query_explanation:
+        response += (chunk.choices[0].delta.content or "")
+    response = [x.lstrip(" ").lstrip(".").rstrip(".") for x in response.split(",")]
+    return [s.translate(str.maketrans('', '', ",")) for s in response]
 
 def write_response(generator, conversation, results=None):
     """Construct response from the generator and append to conversation history"""

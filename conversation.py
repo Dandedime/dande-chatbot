@@ -1,7 +1,23 @@
 from pathlib import Path
 from openai import OpenAI
-from build_prompts import SystemPrompt, SQLPrompt 
+from build_prompts import SystemPrompt, SQLPrompt, TableSelectionPrompt
 import re
+
+TABLE_PATH_DICT = {0: Path("table_contexts/violations.txt"), 
+     1: Path("table_contexts/candidates.txt"), 
+     2: Path("table_contexts/election_contributions.txt"),
+     3: Path("table_contexts/pacs_to_candidates.txt")
+}
+
+def unique_messages(func):
+    def wrapper(*args, **kwargs):
+        messages = func(*args, **kwargs)
+        unique_messages = []
+        for m in messages:
+            if m not in unique_messages:
+                unique_messages.append(m)
+        return unique_messages 
+    return wrapper
 
 class ConversationOpenAI:
     def __init__(self, api_key, model="gpt-4-0125-preview", system_prompt=None, memory_window=5):
@@ -23,17 +39,33 @@ class SQLConversation(ConversationOpenAI):
     def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
-        self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
-        self.error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
-        self.empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
-                                                   
-        self.system_prompt = SQLPrompt(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
+        self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
+        self.error_prompt = SystemPrompt.from_file(Path("prompt_contexts/error.txt"))
+        self.empty_prompt = SystemPrompt.from_file(Path("prompt_contexts/empty.txt"))
+    
+        self.table_selector = TableSelectionPrompt.from_file(table_files=[Path("table_contexts/violations.txt"), 
+                                                    Path("table_contexts/candidates.txt"), 
+                                                    Path("table_contexts/election_contributions.txt"),
+                                                    Path("table_contexts/pacs_to_candidates.txt")])                                                   
 
-        super().__init__(api_key, model, system_prompt=self.system_prompt, memory_window=memory_window)
+        self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/initial.txt")))
 
-    def write_query(self):
+        super().__init__(api_key, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
+
+    def write_query(self, table_selection = None):
         """Construct a sql query an explanation given the current conversation"""
-        return self.respond()
+        if table_selection is not None:
+            sql_prompt = SQLPrompt.from_file(instruction_file=Path("prompt_contexts/sql.txt"), 
+                                            table_files=[TABLE_PATH_DICT[idx] for idx in table_selection])
+            content = self.history.recent_conversation +[{"role": "system", "content": sql_prompt.system_prompt}]
+            return self.respond(content)
+        else:
+            return self.respond()
+
+    def select_tables(self, user_message):
+        question = user_message["content"]
+        content = self.table_selector.general_instructions + f"\nuser_message: {question}"
+        return self.respond([{"role": "system", "content": content}])
 
     def execute_query(self, response):
         """Execute the sql query in the response text if there is one"""
@@ -83,24 +115,28 @@ class ConversationHistory:
         self.messages.append(message)
 
     @property
+    @unique_messages
     def recent_conversation(self):
         """List of messages including all system messages and conversation messages within the memory window"""
         # Always include the original system prompt if there is one
         if self.init_prompt is not None:
-            return self.system_messages[:1] + self.messages[-(self.window-1):]
+            return self.system_messages[:1] + self.messages[-(self.window-1):]  
         else:
             return self.messages[-self.window:]
 
     @property
+    @unique_messages
     def system_messages(self):
         """List of all system and conversation messages"""
         return [message for message in self.messages if message["role"] == "system"]
 
     @property
+    @unique_messages
     def user_messages(self):
         """List of messages from user"""
         return [message for message in self.messages if message["role"] == "user"]
 
-
     def __getitem__(self, idx):
         return self.messages[idx]
+    
+

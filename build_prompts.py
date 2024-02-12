@@ -14,6 +14,7 @@ class TableContext:
             self.table_description = ifile.read()
 
         self.context = self._build_table_context()
+        self.summary = self.table_description.split("\n")[0].split("The following list provides")[0]
 
     def _build_table_context(self):
         table = self.table_name.split(".")
@@ -41,30 +42,50 @@ class TableContext:
         return context
 
 class SystemPrompt:
-    def __init__(self, instruction_file: Path):
-        with open(instruction_file, "r") as ifile:
-            self.general_instructions = ifile.read()
+    def __init__(self, prompt: str):
+        self.general_instructions = prompt
     
     @classmethod
-    def load(cls, instruction_file: Path):
-        return cls(instruction_file)
-        
-class SQLPrompt(SystemPrompt):
-    def __init__(self, instruction_file: Path, table_files: Optional[List[Path]] = None):
-        super().__init__(instruction_file)
+    def from_file(cls, instruction_file: Path):
+        with open(instruction_file, "r") as ifile:
+            prompt = ifile.read()
+        return cls(prompt)
 
+
+class TableSelectionPrompt(SystemPrompt):
+    def __init__(self, prompt: str, table_contexts: List[TableContext]):
+        self.table_contexts = table_contexts
+        super().__init__(prompt.format(table_summaries="\n\n".join([table.summary for table in self.table_contexts])))
+        
+    @classmethod
+    def from_file(cls, instruction_file: Path=Path("prompt_contexts/table_selection.txt"), table_files: Optional[List[Path]] = None):
+        with open(instruction_file, "r") as ifile:
+            prompt = ifile.read()
         if table_files is None:
             table_files = [Path(f) for f in glob("table_contexts/*.txt")]
-        self.table_contexts = [TableContext(table_file) for table_file in table_files]
-        self.system_prompt = self._build_system_prompt()
+        table_contexts = [TableContext(table_file) for table_file in table_files]
+        return cls(prompt, table_contexts)
 
-    def _build_system_prompt(self):
-        tables_context = "\n\n".join([table.context for table in self.table_contexts])
-        return self.general_instructions.format(num_tables=len(self.table_contexts), tables_context=tables_context)
+    def full_context(self, selected_table_idxs):
+        return "\n\n".join([self.table_contexts[i].context for i in selected_table_idxs])
 
 
-# do `streamlit run prompts.py` to view the initial system prompt in a Streamlit app
-if __name__ == "__main__":
-    st.header("System prompt for Andy")
-    prompt = SQLPrompt(Path("prompt_contexts/sql.txt"))
-    st.markdown(prompt.system_prompt)
+        
+class SQLPrompt(SystemPrompt):
+    def __init__(self, prompt: str, table_selection: TableSelectionPrompt):
+        super().__init__(prompt)
+        self.table_selection = table_selection
+        self.system_prompt = self.build_system_prompt(list(range(len(table_selection.table_contexts))))
+
+    def build_system_prompt(self, selected_table_idxs = None):
+        if not selected_table_idxs:
+            selected_table_idxs = []
+        return self.general_instructions.format(num_tables=len(selected_table_idxs), tables_context=self.table_selection.full_context(selected_table_idxs))
+
+    @classmethod
+    def from_file(cls, instruction_file: Path, table_files: Optional[List[Path]] = None):
+        table_selection = TableSelectionPrompt.from_file(table_files=table_files)
+        with open(instruction_file, "r") as ifile:
+            prompt = ifile.read()
+        return cls(prompt, table_selection)
+
