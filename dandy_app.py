@@ -1,9 +1,9 @@
 import streamlit as st
 from conversation import SQLConversation
 from utils import write_full_response, select_tables, write_message
+from constants import TABLE_IDX_DICT
 
 st.title("Andy")
-TABLE_IDX_DICT = {"VIOLATIONS":0, "CANDIDATES":1, "ELECTION_CONTRIBUTIONS": 2, "PACS_TO_CANDIDATES": 3}
 
 # Initialize the conversation
 if "conversation" not in st.session_state:

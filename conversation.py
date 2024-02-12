@@ -1,13 +1,8 @@
 from pathlib import Path
 from openai import OpenAI
 from build_prompts import SystemPrompt, SQLPrompt, TableSelectionPrompt
+from constants import TABLE_PATH_DICT
 import re
-
-TABLE_PATH_DICT = {0: Path("table_contexts/violations.txt"), 
-     1: Path("table_contexts/candidates.txt"), 
-     2: Path("table_contexts/election_contributions.txt"),
-     3: Path("table_contexts/pacs_to_candidates.txt")
-}
 
 def unique_messages(func):
     def wrapper(*args, **kwargs):
