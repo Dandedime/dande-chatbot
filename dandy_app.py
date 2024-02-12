@@ -1,6 +1,6 @@
 import streamlit as st
 from conversation import SQLConversation
-from utils import write_full_response, select_tables, write_response
+from utils import write_full_response, select_tables
 
 st.title("Andy")
 TABLE_IDX_DICT = {"VIOLATIONS":0, "CANDIDATES":1, "ELECTION_CONTRIBUTIONS": 2, "PACS_TO_CANDIDATES": 3}
@@ -31,7 +31,7 @@ if st.session_state.conversation.history[-1]["role"] != "assistant":
             try:
                 table_idx = [TABLE_IDX_DICT[table_name] for table_name in tables]
             except KeyError:
-                message = "No tables are relevant to the user question"
+                message = "I couldn't find any tables relevant to your question."
                 resp_container = st.empty()
                 resp_container.markdown(message)
                 response_msg = {"role": "assistant", "content": message}
