@@ -33,6 +33,9 @@ if st.session_state.conversation.history[-1]["role"] != "assistant":
             except KeyError:
                 message = "I couldn't find any tables relevant to your question."
                 write_message(message, st.session_state.conversation)
-       
-        write_full_response(st.session_state.conversation, table_idx)
+        try: 
+            write_full_response(st.session_state.conversation, table_idx)
+        except Exception as e:
+            message = f"Your query returned the following error: {str(e)}"
+            write_message(message, st.session_state.conversation)
 
