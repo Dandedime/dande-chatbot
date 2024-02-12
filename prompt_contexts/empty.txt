@@ -5,3 +5,7 @@ be improved to make it return results.
 user question: {question}
 query: {query}
 results: {results}
+
+If the query is filtering over any proper nouns double check them against this
+list of suggestions: {suggestions}
+

@@ -2,6 +2,7 @@ from pathlib import Path
 from openai import OpenAI
 from build_prompts import SystemPrompt, SQLPrompt, TableSelectionPrompt
 from constants import TABLE_PATH_DICT
+from rag import PineconeIndex
 import re
 
 def unique_messages(func):
@@ -31,7 +32,7 @@ class ConversationOpenAI:
 
 
 class SQLConversation(ConversationOpenAI):
-    def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
+    def __init__(self, db_conn, pinecone_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
         self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
@@ -42,6 +43,7 @@ class SQLConversation(ConversationOpenAI):
                                                     Path("table_contexts/candidates.txt"), 
                                                     Path("table_contexts/election_contributions.txt"),
                                                     Path("table_contexts/pacs_to_candidates.txt")])                                                   
+        self.proper_nouns = PineconeIndex(pinecone_conn, "proper-nouns")
 
         self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/initial.txt")))
 
@@ -61,6 +63,8 @@ class SQLConversation(ConversationOpenAI):
         question = user_message["content"]
         content = self.table_selector.general_instructions + f"\nuser_message: {question}"
         return self.respond([{"role": "system", "content": content}])
+    def verify_proper_nouns(self, query):
+        return self.proper_nouns.get_similiar(query)
 
     def execute_query(self, response):
         """Execute the sql query in the response text if there is one"""
@@ -85,8 +89,14 @@ class SQLConversation(ConversationOpenAI):
         return self.respond([{"role": "system", "content": content}])
     
     def empty(self, user_message, query, results):
+        proper_noun_suggestions = \
+            ", ".join(self.verify_proper_nouns(user_message["content"]))
         question = user_message["content"]
-        content = self.empty_prompt.general_instructions.format(question=question, query=query, results=results)
+        content = \
+            self.empty_prompt.general_instructions.format(question=question,
+                                                      query=query,
+                                                      results=results,
+                                                      suggestions=proper_noun_suggestions)
         return self.respond([{"role": "system", "content": content}])
 
     @staticmethod

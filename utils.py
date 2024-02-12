@@ -1,4 +1,5 @@
 import streamlit as st
+from rag import PineconeIndex
 from conversation import SQLConversation
 import string
 
@@ -6,18 +7,19 @@ def write_full_response(conversation: SQLConversation, table_selection = None):
     """Create the full response, including query and explanation, results of the query, and the answer to the original question"""
     query_explanation = conversation.write_query(table_selection)
     response = write_response(query_explanation, conversation)
-    query, results, status = conversation.execute_query(response)
+    if len(conversation.history.user_messages)>0:
+        query, results, status = conversation.execute_query(response)
 
-    if results is not None and not results.empty: 
-        st.dataframe(results)
-        _ = write_response(conversation.answer(query, results), conversation)
-    elif results is not None and results.empty:
-        user_message = conversation.history.user_messages[-1]
-        st.dataframe(results)
-        _ = write_response(conversation.empty(user_message, query, results), conversation)
-    if status is not None:
-        user_message = conversation.history.user_messages[-1]
-        _ = write_response(conversation.error(user_message, query, status), conversation)
+        if results is not None and not results.empty:
+            st.dataframe(results)
+            _ = write_response(conversation.answer(query, results), conversation)
+        elif results is not None and results.empty:
+            user_message = conversation.history.user_messages[-1]
+            st.dataframe(results)
+            _ = write_response(conversation.empty(user_message, query, results), conversation)
+        if status is not None:
+            user_message = conversation.history.user_messages[-1]
+            _ = write_response(conversation.error(user_message, query, status), conversation)
 
 def select_tables(conversation: SQLConversation):
     user_message = conversation.history.user_messages[-1]
