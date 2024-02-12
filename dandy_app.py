@@ -1,4 +1,5 @@
 import streamlit as st
+import pinecone as pc
 from conversation import SQLConversation
 from utils import write_full_response, select_tables, write_response
 
@@ -7,7 +8,9 @@ TABLE_IDX_DICT = {"VIOLATIONS":0, "CANDIDATES":1, "ELECTION_CONTRIBUTIONS": 2, "
 
 # Initialize the conversation
 if "conversation" not in st.session_state:
-    st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY, model="gpt-3.5-turbo") #model="gpt-4-0125-preview"
+    st.session_state.conversation =\
+        SQLConversation(st.connection("snowflake"), pc.Pinecone(api_key=st.secrets.PINECONE_API_KEY),
+                                                    api_key=st.secrets.OPENAI_API_KEY)#, model="gpt-3.5-turbo")
 
 # Ask for user input
 if prompt := st.chat_input():
