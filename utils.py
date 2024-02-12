@@ -9,9 +9,8 @@ def write_full_response(conversation: SQLConversation, table_selection = None):
     query, results, status = conversation.execute_query(response)
 
     if results is not None and not results.empty: 
-        user_message = conversation.history.user_messages[-1]
         st.dataframe(results)
-        _ = write_response(conversation.answer(user_message, query, results), conversation)
+        _ = write_response(conversation.answer(query, results), conversation)
     elif results is not None and results.empty:
         user_message = conversation.history.user_messages[-1]
         st.dataframe(results)

@@ -79,11 +79,10 @@ class SQLConversation(ConversationOpenAI):
         else:
             return None, None, None
 
-    def answer(self, user_message, query, results):
+    def answer(self, query, results):
         """Construct an answer to the question in the user_message given the sql query in results of the query"""
-        question = user_message["content"]
-        content = self.answer_prompt.general_instructions.format(question=question, query=query, results=results)
-        return self.respond([{"role": "system", "content": content}])
+        content = self.answer_prompt.general_instructions.format(query=query, results=results)
+        return self.respond(self.history.recent_conversation + [{"role": "system", "content": content}])
     
     def error(self, user_message, query, status):
         question = user_message["content"]
