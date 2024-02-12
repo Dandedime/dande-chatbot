@@ -32,16 +32,16 @@ for message in st.session_state.conversation.history.messages:
 if st.session_state.conversation.history[-1]["role"] != "assistant":
     table_idx = None
     with st.chat_message("assistant"):
-        if st.session_state.conversation.history[-1]["role"] == "user":
-            tables = select_tables(st.session_state.conversation)
-            try:
-                table_idx = [TABLE_IDX_DICT[table_name] for table_name in tables]
-            except KeyError:
-                message = "No tables are relevant to the user question"
-                resp_container = st.empty()
-                resp_container.markdown(message)
-                response_msg = {"role": "assistant", "content": message}
-                st.session_state.conversation.history.append(response_msg)
-       
-        write_full_response(st.session_state.conversation, table_idx)
+       #if st.session_state.conversation.history[-1]["role"] == "user":
+       #    tables = select_tables(st.session_state.conversation)
+       #    try:
+       #        table_idx = [TABLE_IDX_DICT[table_name] for table_name in tables]
+       #    except KeyError:
+       #        message = "No tables are relevant to the user question"
+       #        resp_container = st.empty()
+       #        resp_container.markdown(message)
+       #        response_msg = {"role": "assistant", "content": message}
+       #        st.session_state.conversation.history.append(response_msg)
+       #
+        write_full_response(st.session_state.conversation)#, table_idx)
 

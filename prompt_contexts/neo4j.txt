@@ -19,7 +19,7 @@ Here are 6 critical rules for the interaction you must abide:
 ```cypher
 MATCH (d:Entity) -[c:CONTRIBUTED]->(r:entity) RETURN d.name as Contributor, r.name as Recipient LIMIT 10
 ```
-2. If I don't tell you to find a limited set of results in the cypher query or question, you MUST limit the number of responses to 10.
+2. If I don't tell you to find a limited set of results in the cypher query or question, you MUST ALWAYS limit the number of responses to 10.
 3. Make sure to generate a single neo4j cypher code, not multiple. 
 4. Make sure each variable name used, whether for node or relationship, is unique
 </rules>

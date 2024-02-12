@@ -93,12 +93,12 @@ class AbstractDataConversation(ConversationOpenAI, ABC):
 class Neo4jConversation(AbstractDataConversation):
     def __init__(self, db_conn, api_key, model="gpt-4-0125-preview",
                  conversation_history = None, memory_window=5):
-        answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
-        error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
-        empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
+        answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
+        error_prompt = SystemPrompt.from_file(Path("prompt_contexts/error.txt"))
+        empty_prompt = SystemPrompt.from_file(Path("prompt_contexts/empty.txt"))
 
         query_prompt =\
-            SystemPrompt(Path("prompt_contexts/neo4j.txt")).general_instructions
+            SystemPrompt.from_file(Path("prompt_contexts/neo4j.txt")).general_instructions
 
         super().__init__(db_conn, query_prompt, answer_prompt, error_prompt,
                          empty_prompt, api_key, model,
@@ -107,7 +107,6 @@ class Neo4jConversation(AbstractDataConversation):
 
     def _extract_query(self, response):
         """Extract neo4j query from response text"""
-        print(response)
         neo4j_match = re.search(r"```cypher\n(.*)\n```", response, re.DOTALL)
         if neo4j_match:
             neo4j = neo4j_match.group(1)
@@ -118,9 +117,9 @@ class SQLConversation(AbstractDataConversation):
     def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", conversation_history = None, memory_window=5):
         self.db_conn = db_conn
 
-        self.answer_prompt = SystemPrompt.load(Path("prompt_contexts/answer.txt"))
-        self.error_prompt = SystemPrompt.load(Path("prompt_contexts/error.txt"))
-        self.empty_prompt = SystemPrompt.load(Path("prompt_contexts/empty.txt"))
+        self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
+        self.error_prompt = SystemPrompt.from_file(Path("prompt_contexts/error.txt"))
+        self.empty_prompt = SystemPrompt.from_file(Path("prompt_contexts/empty.txt"))
 
         self.system_prompt = SQLPrompt(instruction_file=Path("prompt_contexts/sql.txt"), table_files=[Path("table_contexts/violations.txt")]).system_prompt
 
@@ -144,7 +143,7 @@ class MultiDBConversation(ConversationOpenAI):
     def __init__(self, db_conversations: List[AbstractDataConversation], api_key, model="gpt-4-0125-preview", conversation_history = None, memory_window=5):
         self.db_conversations = db_conversations
         self.choos_db_prompt =\
-            SystemPrompt.load("prompt_contexts/db_selection.txt")
+            SystemPrompt.from_file("prompt_contexts/db_selection.txt")
 
         super().__init__(api_key=api_key, model=model,
                          system_prompt=system_prompt,

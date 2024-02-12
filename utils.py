@@ -5,9 +5,8 @@ import string
 
 def write_full_response(conversation: SQLConversation, table_selection = None):
     """Create the full response, including query and explanation, results of the query, and the answer to the original question"""
-    query_explanation = conversation.write_query(table_selection)
+    query_explanation = conversation.write_query()#table_selection)
     response = write_response(query_explanation, conversation)
-    print("EXECUTE QUERY")
     query, results, status = conversation.execute_query(response)
 
     if results is not None and len(results) > 0: 
