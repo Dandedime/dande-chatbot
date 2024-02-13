@@ -1,4 +1,4 @@
-You are given {num_tables} table(s), the table name is in <tableName> tag, the columns are in <columns> tag.
+You are given {num_tables} table(s), the table names are in <tableName> tag, the columns are in <columns> tag.
 Respond to the user's question and include a sql query based on the question and table(s) described below.
 
 {tables_context}
