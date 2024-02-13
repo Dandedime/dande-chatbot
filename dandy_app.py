@@ -7,7 +7,9 @@ st.title("Andy")
 
 # Initialize the conversation
 if "conversation" not in st.session_state:
-    st.session_state.conversation = SQLConversation(st.connection("snowflake"), api_key=st.secrets.OPENAI_API_KEY, model="gpt-3.5-turbo") #model="gpt-4-0125-preview"
+    st.session_state.conversation = SQLConversation(st.connection("snowflake"),
+                                                    api_key=st.secrets.OPENAI_API_KEY,
+                                                    model="gpt-4-0125-preview")
 
 # Ask for user input
 if prompt := st.chat_input():
