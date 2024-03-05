@@ -28,9 +28,9 @@ class GraphDBPipeline:
                                 relationship_data_key):
         # query (with a batch size?) table, create entity and relationship data
         # class instances, then call upsert
-        query_res = self.db_conn.batch_query(f"select * from {table_name}",
-                                             batch_size=self.query_batch_size)
-        for batch_res in query_res:
+        cursor = self.db_conn.cursor()
+        query_res = cursor.execute(f"select * from {table_name}")
+        for batch_res in query_res.fetch_pandas_batches():
             # NOTE: entities needs to be (num_rows, 2)
             entities = build_entities(batch_res, entity_data_key)
             relationships = build_relationships(batch_res,
