@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 @dataclass(kw_only=True)
@@ -7,10 +7,10 @@ class Entity:
     entity_type: Optional[str] = field(default=None, init=False)
 
     def to_text(self):
-        data_str = f"{entity_data.entity_type} named {entity_data.name} with "
+        data_str = f"{self.entity_type} named {self.name} with "
 
         field_strs = [f"{field} of {value}" for field, value in
-                      asdict(entity_data).items() if field not in
+                      asdict(self).items() if field not in
                       ["entity_type", "name"]]
         data_str += ", ".join(field_strs)
         return data_str
@@ -30,10 +30,10 @@ class Individual(Entity):
 @dataclass
 class Corporation(Entity):
     entity_type = "corporation"
-    major_industry: str
-    specific_industry: str
-    ownership_structure: str
-    hq_state: str
+    parent_company: Optional[str] = None
+    industry: Optional[str] = None
+    ownership_structure: Optional[str] = None
+    hq_state: Optional[str] = None
 
 #  @dataclass
 #  class PAC(Entity):
