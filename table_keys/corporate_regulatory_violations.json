@@ -1,0 +1,29 @@
+{
+	"entities": [
+		{
+			"entity_type": "corporation",
+            "fields": {
+                "name": "COMPANY",
+                "parent_company": "PARENT_COMPANY",
+                "industry": "INDUSTRY"
+            }
+		},
+		{
+			"entity_type": "agency",
+            "fields": {
+                "name": "AGENCY"
+            }
+		}
+	],
+	"relationships":[
+		{
+			"relationship_type": "violation",
+            "fields": {
+                "violation_type": "OFFENSE_TYPE",
+                "year": "YEAR",
+                "amount": "AMOUNT"
+            }
+		}
+	]
+}
+
