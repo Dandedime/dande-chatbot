@@ -16,7 +16,7 @@ class Entity:
             data_str += " with "
             field_strs = [f"{field} of {value}" for field, value in
                           asdict(self).items() if field not in
-                          ["entity_type", "name"]]
+                          ["entity_type", "name"] and value is not None]
             data_str += ", ".join(field_strs)
         return data_str
 
@@ -24,11 +24,11 @@ class Entity:
 class Individual(Entity):
     entity_type = "individual"
     title: Optional[str] = None
-    address: str
-    city: str
-    state: str
-    zipcode: str
-    gender: str
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zipcode: Optional[str] = None
+    gender: Optional[str] = None
     job_title: Optional[str] = None
 
 
@@ -42,11 +42,12 @@ class Corporation(Entity):
 
 @dataclass
 class Agency(Entity):
-    entity_Type = "agency"
+    entity_type = "agency"
 
 
-#  @dataclass
-#  class PAC(Entity):
+@dataclass
+class PAC(Entity):
+    state: Optional[str] = None
 
 @dataclass
 class Relationship:
@@ -56,6 +57,7 @@ class Relationship:
 class Contribution(Relationship):
     amount: float
     date: str
+    cycle: Optional[int] = None
 
 @dataclass
 class Violation(Relationship):
