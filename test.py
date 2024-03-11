@@ -25,11 +25,10 @@ def get_pc_index(index_name, clear=True):
     return index
 
 
-def test(index_name="entities2", table_name="corporate_regulatory_violations",
-         sample_size=500):
+def test(index_name="entities2", table_name="cf_state_complete_contributions",
+         sample_size=1000, query=None):
     table_key = TableDataKey(f"table_keys/{table_name}.json")
     index = get_pc_index(index_name)
-    print(index)
 
     er = EntityResolution(index)
 
@@ -39,8 +38,15 @@ def test(index_name="entities2", table_name="corporate_regulatory_violations",
                                 pwd=st.secrets.neo4j.pwd)
     pipeline = GraphDBPipeline(er, db_conn, neo4j_conn, test=True)
     pipeline.process_snowflake_table(table_name, table_key,
-                                     row_limit=sample_size)
+                                     row_limit=sample_size, query=query)
 
 
 if __name__ == "__main__":
-    test()
+    query = "select * from STATEDATA.PUBLIC.MI_DEMO where L_NAME_OR_ORG ilike"\
+    "' DEVOS%';"
+    query = """select top 100 concat(trim(L_NAME_OR_ORG), ', ', trim(F_NAME)) as
+    contributor_name, address, city, state, zip, occupation,
+    concat(CAN_LAST_NAME, ', ', CAN_FIRST_NAME) as recipient_name,
+    received_date, amount from statedata.public.mi_demo where L_NAME_OR_ORG ilike 'DEVOS%' and
+    can_first_name is not null;"""
+    test(table_name="mi_demo", query=query)

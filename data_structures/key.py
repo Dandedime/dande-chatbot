@@ -1,8 +1,8 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 
 from data_structures.classes import (
     Entity, Relationship, Corporation, Agency,
-    Violation
+    Violation, Individual, Contribution, PAC
 )
 
 import json
@@ -17,11 +17,21 @@ class TableDataKey:
     def build(self, row: pd.Series) -> Tuple[List[Entity], List[Relationship]]:
         return self.build_entities(row), self.build_relationships(row)
 
+    def _get_entity_type(self, entity_type: Union[dict, str], row):
+        if isinstance(entity_type, str):
+            return entity_type
+        else:
+            for entity_option in entity_type:
+                if row[entity_option["column"]] == entity_option["value"]:
+                    return entity_option["type"]
+
     def build_entities(self, row: pd.Series) -> List[Entity]:
         entities = []
         for entity_dict in self.key_dict["entities"]:
-            entity_type = entity_dict["entity_type"]
-            fields_map = entity_dict["fields"]
+            entity_type = self._get_entity_type(entity_dict["entity_type"], row)
+            if entity_type is None:
+                print(row)
+            fields_map = entity_dict["fields"][entity_type]
             vals = dict(zip(fields_map.keys(),
                             row[fields_map.values()].to_numpy()))
             vals["entity_type"] = entity_type
@@ -31,6 +41,8 @@ class TableDataKey:
                 entity = Corporation(**vals)
             elif entity_type == "agency":
                 entity = Agency(**vals)
+            elif entity_type == "PAC":
+                entity = PAC(**vals)
             entities.append(entity)
         return entities
 
@@ -43,7 +55,7 @@ class TableDataKey:
             vals["relationship_type"] = relationship_type
             if relationship_type == "violation":
                 relationship = Violation(**vals)
-            elif entity_type == "contribution":
+            elif relationship_type == "contribution":
                 relationship = Contribution(**vals)
             relationships.append(relationship)
         return relationships
