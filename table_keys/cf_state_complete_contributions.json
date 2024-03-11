@@ -1,0 +1,85 @@
+{
+	"entities": [
+		{
+			"entity_type": [
+				{
+					"column": "CONTRIBUTOR_TYPE",
+					"value": "I",
+					"type": "individual"
+				},
+				{
+					"column": "IS_CORP",
+					"value": "corp",
+				       	"type": "corporation"
+				},
+				{
+					"column": "CONTRIBUTOR_TYPE",
+					"value": "C",
+				       	"type": "PAC"
+				}
+			],
+			 "fields": {
+				 "individual":
+				 {
+				     "name": "CONTRIBUTOR_NAME",
+				     "title": "CONTRIBUTOR_TITLE",
+				     "address": "CONTRIBUTOR_ADDRESS",
+				     "state": "CONTRIBUTOR_STATE",
+				     "zipcode": "CONTRIBUTOR_ZIPCODE",
+				     "gender": "CONTRIBUTOR_GENDER",
+				     "job_title": "CONTRIBUTOR_OCCUPATION"
+				},
+				"corporation":
+				 {
+				     "name": "CONTRIBUTOR_NAME",
+				     "hq_state": "CONTRIBUTOR_STATE"
+				},
+				"PAC":
+				 {
+				     "name": "CONTRIBUTOR_NAME",
+				     "state": "CONTRIBUTOR_STATE"
+				}
+
+			 }
+		},
+		{
+			"entity_type": [
+				{
+					"column": "RECIPIENT_TYPE",
+					"value": "CAND",
+					"type": "individual"
+				},
+				{
+					"column": "RECIPIENT_TYPE", 
+					"value": "COMM",
+				       	"type": "PAC"
+				}
+			 ],
+			 "fields": {
+				 "individual":
+				 {
+				     "name": "RECIPIENT_NAME",
+				     "state": "RECIPIENT_STATE"
+				},
+				"PAC":
+				 {
+				     "name": "RECIPIENT_NAME",
+				     "state": "RECIPIENT_STATE"
+				}
+			 }
+		}
+	],
+	"relationships":[
+		{
+			"relationship_type": "contribution",
+			 "fields": {
+			     "amount": "AMOUNT",
+			     "cycle": "CYCLE",
+			     "date": "DATE"
+			 },
+			 "source_entity": 0,
+			 "target_entity": 1
+	    
+		}
+	]
+}
