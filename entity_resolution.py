@@ -6,6 +6,7 @@ from dataclasses import asdict
 
 from data_structures import Entity, Corporation
 from langchain_openai import OpenAIEmbeddings
+from dataclasses import asdict
 
 
 class EntityResolution:
@@ -29,6 +30,8 @@ class EntityResolution:
         """
         data_str = entity_data.to_text()
         vector = self.embedding.embed_query(data_str)
+        data_dict = asdict(entity_data)
+        data_dict = {k:v for k,v in data_dict.items() if v is not None}
 
         query_filter = {
             "entity_type": {"$eq": entity_data.entity_type}
@@ -37,7 +40,6 @@ class EntityResolution:
                                                       include_metadata=True,
                                                       filter=query_filter)
 
-        print(best_match_entity)
         score = None
         if not len(best_match_entity["matches"]):
             matched_entity = None
@@ -49,6 +51,15 @@ class EntityResolution:
             if score  >= self.threshold:
                 pinecone_id = best_match["id"]
                 matched_entity = best_match["metadata"]
+                
+                missing_keys = [k for k in data_dict.keys() if k not in matched_entity.keys()]
+                if missing_keys:
+                    to_add = {k: data_dict[k] for k in missing_keys if data_dict[k] is not None}                
+                    self.pinecone_index.update(
+                        id=pinecone_id, 
+                        set_metadata=to_add
+                    )
+                    
                 matched_entity['score'] = score
             else:
                 matched_entity = None
@@ -62,7 +73,6 @@ class EntityResolution:
         metadata = {"text": text}
         metadata.update({key: val for key, val in asdict(entity).items() if val
                         is not None})
-        print(metadata)
         self.pinecone_index.upsert(vectors=[{"id": pinecone_id, "values":
                                              vector, "metadata":
                                              metadata}])
