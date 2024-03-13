@@ -3,6 +3,7 @@ from openai import OpenAI
 from build_prompts import SystemPrompt, SQLPrompt, TableSelectionPrompt
 from constants import TABLE_PATH_DICT
 from rag import PineconeIndex
+from typing import List
 import re
 
 def unique_messages(func):
@@ -30,7 +31,16 @@ class ConversationOpenAI:
             stream=True
         )
 
+class PineconeConversation(ConversationOpenAI):
+   
+    def __init__(self, api_key, model="gpt-4-0125-preview", memory_window=5): 
+        self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/entity_resolution.txt"))) 
+        super().__init__(api_key, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
 
+    def find_match(self, query: str, candidates: List[str]) -> List[str]:
+        content = self.system_prompt.general_instructions.format(entity=query, candidates=candidates)
+        return self.respond([{"role": "system", "content": content}])
+    
 class SQLConversation(ConversationOpenAI):
     def __init__(self, db_conn, pinecone_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
@@ -63,6 +73,7 @@ class SQLConversation(ConversationOpenAI):
         question = user_message["content"]
         content = self.table_selector.general_instructions + f"\nuser_message: {question}"
         return self.respond([{"role": "system", "content": content}])
+    
     def verify_proper_nouns(self, query):
         return self.proper_nouns.get_similiar(query)
 
