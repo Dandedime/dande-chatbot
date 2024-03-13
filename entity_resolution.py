@@ -49,7 +49,7 @@ class EntityResolution:
         return best_match, score
 
 
-    def resolve(self, entity_data: Entity, use_llm: bool = False, top_k: int = 1):
+    def resolve(self, entity_data: Entity, use_llm: bool = True, top_k: int = 1):
         """
         Args:
             entity_data: Entity class instance containing data for entity to be
@@ -82,6 +82,8 @@ class EntityResolution:
             if best_match:
                 pinecone_id = best_match["id"]
                 matched_entity = best_match["metadata"]
+                print(0, data_str)
+                print(1, matched_entity["text"])
                 
                 missing_keys = [k for k in data_dict.keys() if k not in matched_entity.keys()]
                 if missing_keys:
