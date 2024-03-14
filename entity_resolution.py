@@ -2,9 +2,7 @@ import uuid
 import pinecone
 import streamlit as st
 
-from dataclasses import asdict
-
-from data_structures import Entity, Corporation, Individual
+from data_structures import Entity, Corporation, Individual, from_type
 from langchain_openai import OpenAIEmbeddings
 from dataclasses import asdict
 from conversation import ConversationOpenAI, PineconeConversation
@@ -82,13 +80,15 @@ class EntityResolution:
             if best_match:
                 pinecone_id = best_match["id"]
                 matched_entity = best_match["metadata"]
-                print(0, data_str)
-                print(1, matched_entity["text"])
                 
                 missing_keys = [k for k in data_dict.keys() if k not in matched_entity.keys()]
                 if missing_keys:
-                    #TODO: update text section of metadata
-                    to_add = {k: data_dict[k] for k in missing_keys if data_dict[k] is not None}                
+                    #update metadata with missing keys
+                    to_add = {k: data_dict[k] for k in missing_keys if data_dict[k] is not None}
+                    updated_dict = {**matched_entity, **to_add}
+                    del updated_dict["text"]
+                    entity = from_type(updated_dict)
+                    to_add["text"] = entity.to_text()  
                     self.pinecone_index.update(
                         id=pinecone_id, 
                         set_metadata=to_add

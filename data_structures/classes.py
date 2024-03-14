@@ -71,3 +71,12 @@ class MarriedTo(Relationship):
     pass
 
 
+def from_type(entity_dict) -> Entity:
+    if entity_dict["entity_type"] == "individual":
+        return Individual(**entity_dict)
+    elif entity_dict["entity_type"] == "corporation":
+        return Corporation(**entity_dict)
+    elif entity_dict["entity_type"] == "Agency":
+        return Agency(**entity_dict)
+    else:
+        raise Exception("Entity type does not exist")
