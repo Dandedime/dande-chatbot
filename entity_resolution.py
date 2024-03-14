@@ -2,7 +2,7 @@ import uuid
 import pinecone
 import streamlit as st
 
-from data_structures import Entity, Corporation, Individual, from_type
+from data_structures import Entity, Corporation, Individual, from_data_dict
 from langchain_openai import OpenAIEmbeddings
 from dataclasses import asdict
 from conversation import ConversationOpenAI, PineconeConversation
@@ -87,7 +87,7 @@ class EntityResolution:
                     to_add = {k: data_dict[k] for k in missing_keys if data_dict[k] is not None}
                     updated_dict = {**matched_entity, **to_add}
                     del updated_dict["text"]
-                    entity = from_type(updated_dict)
+                    entity = from_data_dict(updated_dict)
                     to_add["text"] = entity.to_text()  
                     self.pinecone_index.update(
                         id=pinecone_id, 
