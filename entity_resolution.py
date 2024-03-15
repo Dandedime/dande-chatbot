@@ -80,29 +80,29 @@ class EntityResolution:
         query_filter = {
             "entity_type": {"$eq": entity_data.entity_type}
         }
-        best_match_entity = self.pinecone_index.query(vector=vector, top_k=top_k,
+        best_match_entities = self.pinecone_index.query(vector=vector, top_k=top_k,
                                                       include_metadata=True,
                                                       filter=query_filter)
         score = None
-        if not len(best_match_entity["matches"]):
-            matched_entity = None
+        if not len(best_match_entities["matches"]):
+            metadata = None
             pinecone_id = self._upsert_new_entity(vector, data_str,
                                                   entity_data)
         else:
-            best_match, score = self.find_best_match(best_match_entity, data_str, top_k, use_llm)
+            best_match, score = self.find_best_match(best_match_entities, data_str, top_k, use_llm)
                     
             if best_match:
-                matched_entity = best_match["metadata"]
+                metadata = best_match["metadata"]
                 pinecone_id = best_match["id"]
-                self.update_metadata(matched_entity, pinecone_id, data_dict)
+                self.update_metadata(metadata, pinecone_id, data_dict)
 
-                matched_entity['score'] = score
+                metadata['score'] = score
                     
             else:
-                matched_entity = None
+                metadata = None
                 pinecone_id = self._upsert_new_entity(vector, data_str,
                                                     entity_data)
-        return matched_entity, pinecone_id, score
+        return metadata, pinecone_id, score
 
     def _upsert_new_entity(self, vector, text, entity):
         print("UPSERTING!")
