@@ -45,9 +45,23 @@ class EntityResolution:
                 best_match = best_match_candidate
         
         return best_match, score
+    
+    def update_metadata(self, metadata, pinecone_id, data_dict):
+        """If new entity has fields best match doesn't update best match's metadata with new fields"""        
+        missing_keys = [k for k in data_dict.keys() if k not in metadata.keys()]
+        if missing_keys:
+            to_add = {k: data_dict[k] for k in missing_keys if data_dict[k] is not None}
+            updated_dict = {**metadata, **to_add}
+            del updated_dict["text"]
+            entity = from_data_dict(updated_dict)
+            to_add["text"] = entity.to_text()  
+            self.pinecone_index.update(
+                id=pinecone_id, 
+                set_metadata=to_add
+            )
+            
 
-
-    def resolve(self, entity_data: Entity, use_llm: bool = True, top_k: int = 1):
+    def resolve(self, entity_data: Entity, use_llm: bool = False, top_k: int = 1):
         """
         Args:
             entity_data: Entity class instance containing data for entity to be
@@ -78,22 +92,10 @@ class EntityResolution:
             best_match, score = self.find_best_match(best_match_entity, data_str, top_k, use_llm)
                     
             if best_match:
-                pinecone_id = best_match["id"]
                 matched_entity = best_match["metadata"]
-                
-                missing_keys = [k for k in data_dict.keys() if k not in matched_entity.keys()]
-                if missing_keys:
-                    #update metadata with missing keys
-                    to_add = {k: data_dict[k] for k in missing_keys if data_dict[k] is not None}
-                    updated_dict = {**matched_entity, **to_add}
-                    del updated_dict["text"]
-                    entity = from_data_dict(updated_dict)
-                    to_add["text"] = entity.to_text()  
-                    self.pinecone_index.update(
-                        id=pinecone_id, 
-                        set_metadata=to_add
-                    )
-                    
+                pinecone_id = best_match["id"]
+                self.update_metadata(matched_entity, pinecone_id, data_dict)
+
                 matched_entity['score'] = score
                     
             else:
