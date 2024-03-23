@@ -3,6 +3,7 @@ from entity_resolution import EntityResolution
 from data_structures.key import TableDataKey
 from neo4j_connection import Neo4jConnection
 
+import time
 import pinecone
 import streamlit as st
 
@@ -37,8 +38,10 @@ def test(index_name="entities2", table_name="cf_state_complete_contributions",
                                 user=st.secrets.neo4j.user,
                                 pwd=st.secrets.neo4j.pwd)
     pipeline = GraphDBPipeline(er, db_conn, neo4j_conn, test=True)
+    t = time.time()
     pipeline.process_snowflake_table(table_name, table_key,
                                      row_limit=sample_size, query=query)
+    print(time.time() - t)
 
 
 if __name__ == "__main__":

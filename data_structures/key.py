@@ -2,7 +2,7 @@ from typing import List, Tuple, Optional, Union
 
 from data_structures.classes import (
     Entity, Relationship, Corporation, Agency,
-    Violation, Individual, Contribution, PAC
+    Violation, Individual, Contribution, PAC, Organization
 )
 
 import json
@@ -15,7 +15,9 @@ class TableDataKey:
             self.key_dict = json.load(ifile)
 
     def build(self, row: pd.Series) -> Tuple[List[Entity], List[Relationship]]:
-        return self.build_entities(row), self.build_relationships(row)
+        entities = self.build_entities(row)
+        relationships, entity_mapping = self.build_relationships(row)
+        return entities, relationships, entity_mapping
 
     def _get_entity_type(self, entity_type: Union[dict, str], row):
         if isinstance(entity_type, str):
@@ -35,19 +37,24 @@ class TableDataKey:
             vals = dict(zip(fields_map.keys(),
                             row[fields_map.values()].to_numpy()))
             vals["entity_type"] = entity_type
+            print(entity_type)
             if entity_type == "individual":
+                print(vals)
                 entity = Individual(**vals)
+            elif entity_type == "organization":
+                entity = Organization(**vals)
             elif entity_type == "corporation":
                 entity = Corporation(**vals)
             elif entity_type == "agency":
                 entity = Agency(**vals)
-            elif entity_type == "PAC":
+            elif entity_type == "pac":
                 entity = PAC(**vals)
             entities.append(entity)
         return entities
 
     def build_relationships(self, row: pd.Series) -> List[Relationship]:
         relationships = []
+        entity_mapping = []
         for relationship_dict in self.key_dict["relationships"]:
             relationship_type = relationship_dict["relationship_type"]
             fields_map = relationship_dict["fields"]
@@ -58,5 +65,7 @@ class TableDataKey:
             elif relationship_type == "contribution":
                 relationship = Contribution(**vals)
             relationships.append(relationship)
-        return relationships
+            entity_mapping.append((relationship_dict["source_entity"],
+                                   relationship_dict["terminal_entity"]))
+        return relationships, entity_mapping
 

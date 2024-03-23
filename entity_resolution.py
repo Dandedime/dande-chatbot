@@ -1,21 +1,41 @@
+import time
 import uuid
 import pinecone
 import streamlit as st
+import numpy as np
 
 from data_structures import Entity, Corporation, Individual, from_data_dict
+from dataclasses import asdict
+from abc import ABC, abstractmethod
+
 from langchain_openai import OpenAIEmbeddings
 from dataclasses import asdict
 from conversation import ConversationOpenAI, PineconeConversation
 from utils import find_pinecone_match
 import streamlit as st
 
-class EntityResolution:
+class Embedding:
+    def __init__(self, field_weights=None):
+        self.embedding = OpenAIEmbeddings()
+        self.field_weights = field_weights
 
-    def __init__(self, pinecone_index, threshold: float = 0.97, embedding=None):
+    def embed_fields(self, field_vals):
+        fields, values = zip(*[(key, value) for key, value in field_vals.items()
+                              if value is not None])
+        vectors = np.array(self.embedding.embed_documents(values))
+        norm = np.sum([self.field_weights[field] for field in fields])
+        return list(map(float, (np.sum([self.field_weights[field] * vector for field, vector in
+                       zip(fields, vectors)], axis=0) /
+                    norm)))
+
+class AbstractEntityResolution(ABC):
+    def __init__(self, pinecone_index, min_threshold=0.95, num_matches=10, embedding=None):
         self.pinecone_index = pinecone_index
         if embedding is None:
             embedding = OpenAIEmbeddings()
         self.embedding = embedding
+        self.min_threshold = min_threshold
+        self.num_matches = num_matches
 
         self.threshold = threshold
         self.pinecone_conversation = PineconeConversation(api_key=st.secrets.OPENAI_API_KEY)
@@ -87,7 +107,8 @@ class EntityResolution:
         if not len(best_match_entities["matches"]):
             metadata = None
             pinecone_id = self._upsert_new_entity(vector, data_str,
-                                                  entity_data)
+                                                  entity)
+
         else:
             best_match, score = self.find_best_match(best_match_entities, data_str, top_k, use_llm)
                     
@@ -104,8 +125,18 @@ class EntityResolution:
                                                     entity_data)
         return metadata, pinecone_id, score
 
+
+    def _construct_filters(self, entity_data):
+        query_filter = {
+            "entity_type": {"$eq": entity_data.entity_type},
+        }
+        if entity_data.suffix is not None:
+            query_filter["suffix"] = {"$in": [entity_data.suffix, "None"]}
+        if entity_data.gender is not None:
+            query_filter["gender"] = {"$in": [entity_data.gender, "None"]}
+        return query_filter
+
     def _upsert_new_entity(self, vector, text, entity):
-        print("UPSERTING!")
         pinecone_id = str(uuid.uuid4().hex)
         metadata = {"text": text}
         metadata.update({key: val for key, val in asdict(entity).items() if val
@@ -114,6 +145,65 @@ class EntityResolution:
                                              vector, "metadata":
                                              metadata}])
         return pinecone_id
+    @abstractmethod
+    def choose_best_match(self, entity, matches):
+        ...
+
+
+class EntityResolution(AbstractEntityResolution):
+
+    def __init__(self, pinecone_index, num_matches=10, 
+                 min_threshold: float = 0.98, embedding=None):
+        super().__init__(pinecone_index=pinecone_index,
+                         min_threshold=min_threshold, embedding=embedding)
+
+    def choose_best_match(self, entity: Entity, matches):
+        """
+        Args:
+            entity_data: Entity class instance containing data for entity to be
+                rseolved
+        Returns:
+            Pinecone id either referring to an existing entity or for a newly
+                upserted entity """
+        pinecone_id = matches[0]["id"]
+        matched_entity = matches[0]["metadata"]
+        matched_entity["score"] = matches[0]["score"]
+        return pinecone_id, matched_entity
+
+    def cluster_entities(self, query_entity, matches, fields=None):
+        data = {0: asdict(query_entity)}
+        data.update({i+1: match["metadata"] for i, match in
+                     enumerate(matches)})
+        duplicates = deduper.partition(data)
+        if len(duplicates[0][0]) > 1:
+            return matches[duplicates[0][0][1]], duplicates[0][0][1]
+        else:
+            return None, None
+
+
+class GraphDeduper(AbstractEntityResolution):
+    def __init__(self, pinecone_index, neo4j_conn, min_threshold: float = 0.5,
+                 embedding=None, update_graphdb: bool = True):
+        self.neo4j_conn = neo4j_conn
+        self.update_graphdb = update_graphdb
+        super().__init__(pinecone_index=pinecone_index,
+                         min_threshold=min_threshold, embedding=embedding)
+
+    def _get_shared_edges(self, id1, id2):
+        pass
+
+    def choose_best_match(self, entity, matches):
+        pass
+
+    def merge_nodes(self, id1, id2):
+        # should also merge in pinecone!
+        pass
+
+    def resolve(self, entity: Entity):
+        pinecone_id, matched_entity = super().resolve(entity)
+        if self.update_graphdb:
+            self.merge_nodes(self, id1, id2)
+
 
 
 
