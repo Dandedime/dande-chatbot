@@ -27,15 +27,12 @@ class GraphDBPipeline:
         scores = []
         matches = []
         for entity in entities:
-            matched_entity, pinecone_id, score = self.entity_resolver.resolve(entity)
+            pinecone_id, matched_entity, score = self.entity_resolver.resolve(entity)
+            entity.id = pinecone_id
             if matched_entity is None:
-                # add node to graph db
                 if not self.test:
-                    self.upsert_entity_node(entity_data, pinecone_id)
+                    self.neo4j_conn.create_node(entity)
             else:
-                print("MATCHED:")
-                print(entity)
-                print(matched_entity)
                 query_dict = {f"query_{key}": value for key, value in
                               asdict(entity).items()}
                 match_dict = {f"match_{key}": value for key, value in
@@ -45,10 +42,7 @@ class GraphDBPipeline:
 
             ids.append(pinecone_id)
             scores.append(score)
-        return ids, scores, matches
-
-    def upsert_entity_node(self, entity_data, pinecone_id):
-        pass
+        return entities, scores, matches
 
     def upsert_relationship_edge(self, entity_node_ids, relationship_data: Relationship):
         pass
@@ -56,26 +50,27 @@ class GraphDBPipeline:
     def process_snowflake_table(self, table_name, data_key: TableDataKey,
                                 row_limit: Optional[int] = None, query:
                                 Optional[str] = None):
-        print('processing table')
         cursor = self.snowflake_conn.cursor()
         if row_limit is None and query is None:
             query = f"select * from datadime1.public.{table_name}"
         elif query is None:
             query = f"select top {row_limit} * from datadime1.public.{table_name}"
-        print(query)
         query_res = cursor.execute(query)
         scores_all = []
         ms_all = []
         for batch_res in query_res.fetch_pandas_batches():
             for _, row in batch_res.iterrows():
-                entities, relationships = data_key.build(row)
-                print(entities)
-                entity_ids, scores, matches = self.upsert_entities(entities)
+                entities, relationships, entity_relationship_idx = data_key.build(row)
+                entities, scores, matches = self.upsert_entities(entities)
                 scores_all += scores
                 ms_all += matches
 
                 if not self.test:
-                    self.batch_upsert_relationships(entity_ids, relationships)
+                    for relationship, entity_idxs in zip(relationships,
+                                                         entity_relationship_idx):
+                        self.neo4j_conn.create_edge(relationship,
+                                                    entities[entity_idxs[0]],
+                                                    entities[entity_idxs[1]])
 
         df = pd.DataFrame(ms_all)
         df.to_csv("matches.csv", index=False)
