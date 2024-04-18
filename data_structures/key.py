@@ -11,12 +11,20 @@ import pandas as pd
 
 class TableDataKey:
     def __init__(self, json_file):
+        """Class to handle the extraction of entities and relationships from a
+        snowflake table
+        Args:
+            json_file: Path to the json file corresponding to table in question
+                that contains instructinos for entity and relationship mapping
+        """
         with open(json_file, 'r') as ifile:
             self.key_dict = json.load(ifile)
+        self.query = self.key_dict.get("query")
 
-    def build(self, row: pd.Series) -> Tuple[List[Entity], List[Relationship]]:
-        entities = self.build_entities(row)
-        relationships, entity_mapping = self.build_relationships(row)
+    def build(self, row: pd.Series, row_index: Optional[int] = None) -> Tuple[List[Entity], List[Relationship]]:
+        """Extract any entity and relationships from the given row"""
+        entities = self.build_entities(row, row_index)
+        relationships, entity_mapping = self.build_relationships(row, row_index)
         return entities, relationships, entity_mapping
 
     def _get_entity_type(self, entity_type: Union[dict, str], row):
@@ -27,7 +35,8 @@ class TableDataKey:
                 if row[entity_option["column"]] == entity_option["value"]:
                     return entity_option["type"]
 
-    def build_entities(self, row: pd.Series) -> List[Entity]:
+    def build_entities(self, row: pd.Series, row_index: Optional[int] = None) -> List[Entity]:
+        """Extract entities from the given row"""
         entities = []
         for entity_dict in self.key_dict["entities"]:
             entity_type = self._get_entity_type(entity_dict["entity_type"], row)
@@ -35,11 +44,13 @@ class TableDataKey:
                 print(row)
             fields_map = entity_dict["fields"][entity_type]
             vals = dict(zip(fields_map.keys(),
-                            row[fields_map.values()].to_numpy()))
+                            list(map(lambda x: x.lower() if isinstance(x, str)
+                                     else x,
+                                 row[fields_map.values()].to_numpy()))))
             vals["entity_type"] = entity_type
-            print(entity_type)
+            if row_index is not None:
+                vals["row_index"] = row_index
             if entity_type == "individual":
-                print(vals)
                 entity = Individual(**vals)
             elif entity_type == "organization":
                 entity = Organization(**vals)
@@ -52,7 +63,9 @@ class TableDataKey:
             entities.append(entity)
         return entities
 
-    def build_relationships(self, row: pd.Series) -> List[Relationship]:
+    def build_relationships(self, row: pd.Series, row_index: Optional[int] =
+                            None) -> List[Relationship]:
+        """Extract relationships from the given row"""
         relationships = []
         entity_mapping = []
         for relationship_dict in self.key_dict["relationships"]:
@@ -60,6 +73,8 @@ class TableDataKey:
             fields_map = relationship_dict["fields"]
             vals = dict(zip(fields_map.keys(), row[fields_map.values()]))
             vals["relationship_type"] = relationship_type
+            if row_index is not None:
+                vals["row_index"] = row_index
             if relationship_type == "violation":
                 relationship = Violation(**vals)
             elif relationship_type == "contribution":
