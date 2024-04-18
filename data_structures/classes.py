@@ -11,13 +11,15 @@ class Entity:
     name: str
     entity_type: Optional[str] = field(default=None, init=False)
     id: Optional[str] = None
+    row_index: Optional[int] = None
 
     def to_text(self):
-        data_str = f"{self.entity_type} named {self.name}"
+        data_str = f"An {self.entity_type} named {self.name};"
 
         dict_rep = asdict(self)
+        dict_rep.pop("row_index")
         if len(dict_rep):
-            data_str += " with "
+            data_str += f" This {self.entity_type} has "
             field_strs = [f"{field} of {value}" for field, value in
                           asdict(self).items() if field not in
                           ["entity_type", "name"] and value is not None]
@@ -41,21 +43,34 @@ class Individual(Entity):
     occupation: Optional[str] = None
     employer: Optional[str] = None
 
-    def __post_init__(self):
-        if self.first_name is None:
-            self.first_name = self.name_parts["first"]
-        if self.last_name is None:
-            self.last_name = self.name_parts["last"]
-        if self.middle_name is None:
-            self.middle_name = self.name_parts.get("middle")
-        if self.title is None:
-            self.title = self.name_parts["title"]
-        if self.suffix is None:
-            self.suffix = self.name_parts["suffix"]
-
     @cached_property
     def name_parts(self) -> Dict[str, str]:
         return get_name_parts(self.name)
+
+    def to_text(self):
+        data_str = f"An individual named {self.name} with first name of"\
+            f" {self.first_name}"
+        if self.last_name is not None:
+            data_str += f", last name of {self.last_name}"
+        if self.middle_name is not None:
+            data_str += f", middle name of {self.middle_name}"
+        if self.title is not None:
+            data_str += f", title of {self.title}"
+        if self.suffix is not None:
+            data_str += f", suffix of {self.suffix}"
+        data_str += ";"
+
+        dict_rep = asdict(self)
+        for key in ["name", "first_name", "last_name", "middle_name", "suffix",
+                    "title", "entity_type", "row_index"]:
+            dict_rep.pop(key)
+
+        if any(val is not None for val in dict_rep.values()):
+            data_str += " This individual has "
+            field_strs = [f"{field} of {value}" for field, value in
+                          dict_rep.items() if value is not None]
+            data_str += ", ".join(field_strs)
+        return data_str
 
 
 @dataclass
@@ -92,6 +107,7 @@ class PAC(Entity):
 @dataclass
 class Relationship:
     relationship_type: str
+    row_index: Optional[int] = None
 
 @dataclass
 class EntityMatch(Relationship):
