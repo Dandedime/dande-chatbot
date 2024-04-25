@@ -29,6 +29,7 @@ If a csv_file is provided any query present in the table key will be ignored in 
 ### Table Keys
 
 A table key must be given to the populate script that describes the entities and relationships present in each row. These keys are defined as json files stored in `table_keys/`. The basic structure of one of these jsons will look like
+
     {
         "table_name": TABLE_NAME,
 	"query": QUERY,
