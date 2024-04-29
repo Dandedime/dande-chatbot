@@ -19,7 +19,22 @@ class TableDataKey:
         """
         with open(json_file, 'r') as ifile:
             self.key_dict = json.load(ifile)
-        self.query = self.key_dict.get("query")
+        self.table_name = self.key_dict["table_name"]
+        self.query = self._load_query()
+        self.relationship_type = self.key_dict["relationship_type"]
+        entity_types = []
+        for entity in self.key_dict["entities"]:
+            for entity_type in entity["entity_type"]:
+                entity_types.append(entity_type["type"])
+        self.entity_types = set(entity_types)
+
+    def _load_query(self):
+        query = self.key_dict.get("query")
+        query_file = self.key_dict.get("query_file")
+        if query is None and query_file is not None:
+            with open(query_file, "r") as ifile:
+                query = ifile.read()
+        return query
 
     def build(self, row: pd.Series, row_index: Optional[int] = None) -> Tuple[List[Entity], List[Relationship]]:
         """Extract any entity and relationships from the given row"""

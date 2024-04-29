@@ -1,5 +1,5 @@
 from pathlib import Path
-from openai import OpenAI
+from openai import AzureOpenAI
 from build_prompts import SystemPrompt, SQLPrompt, TableSelectionPrompt
 from constants import TABLE_PATH_DICT
 from rag import PineconeIndex
@@ -17,8 +17,11 @@ def unique_messages(func):
     return wrapper
 
 class ConversationOpenAI:
-    def __init__(self, api_key, model="gpt-4-0125-preview", system_prompt=None, memory_window=5):
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self, api_key, azure_endpoint, api_version,
+                 model="entity_resolution", system_prompt=None, memory_window=5):
+        self.client = AzureOpenAI(api_key=api_key,
+                                  api_version=api_version,
+                                  azure_endpoint=azure_endpoint)
         self.model = model
         self.history = ConversationHistory(system_prompt=system_prompt, window=memory_window)
 
@@ -33,16 +36,17 @@ class ConversationOpenAI:
 
 class PineconeConversation(ConversationOpenAI):
    
-    def __init__(self, api_key, model="gpt-4-0125-preview", memory_window=5): 
+    def __init__(self, api_key, azure_endpoint, api_version, model="gpt-4-0125-preview", memory_window=5): 
         self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/entity_resolution.txt"))) 
-        super().__init__(api_key, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
+        super().__init__(api_key, azure_endpoint, api_version, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
 
     def find_match(self, query: str, candidates: List[str]) -> List[str]:
         content = self.system_prompt.general_instructions.format(entity=query, candidates=candidates)
         return self.respond([{"role": "system", "content": content}])
     
 class SQLConversation(ConversationOpenAI):
-    def __init__(self, db_conn, pinecone_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
+    def __init__(self, db_conn, pinecone_conn, api_key, azure_endpoint,
+                 api_version, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
         self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
@@ -57,7 +61,7 @@ class SQLConversation(ConversationOpenAI):
 
         self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/initial.txt")))
 
-        super().__init__(api_key, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
+        super().__init__(api_key, azure_endpoint, api_version, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
 
     def write_query(self, table_selection = None):
         """Construct a sql query an explanation given the current conversation"""

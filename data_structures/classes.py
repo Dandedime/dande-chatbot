@@ -14,7 +14,7 @@ class Entity:
     row_index: Optional[int] = None
 
     def to_text(self):
-        data_str = f"An {self.entity_type} named {self.name};"
+        data_str = f"{self.entity_type} named {self.name};"
 
         dict_rep = asdict(self)
         dict_rep.pop("row_index")
@@ -109,10 +109,6 @@ class Relationship:
     relationship_type: str
     row_index: Optional[int] = None
 
-@dataclass
-class EntityMatch(Relationship):
-    relationship_type: str = "EntityMatch"
-    similarity: Optional[float] = None
 
 @dataclass
 class Contribution(Relationship):

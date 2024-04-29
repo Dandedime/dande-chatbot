@@ -129,7 +129,9 @@ After populating the graph db a neighbor score is assigned to identity edges whi
 
 #### LLM-based Entity Resolution
 
-Additional analysis to support entity resolution can be performed using an LLM. `llm_resolve.py` defines a class that grabs identity candidate clusters from the graph (based on whatever score thresholds) and feeds them to the LLM. The LLM is given a prompt defined in `prompt_contexts/entity_resolution.txt` which instructs it to break the provided cluster down into sub-clusters referring to the same entity and assign each a score. If it decides the provided cluster most likely does all refer to the same entity there will be a single sub-cluster and a single confidence score for the whole set. The identity edges between each node of each sub-cluster receive an `llm_score`. 
+Additional analysis to support entity resolution can be performed using an LLM. `llm_resolve.py` defines a class that grabs identity candidate clusters from the graph (based on whatever score thresholds) and feeds them to the LLM. The LLM is given a prompt defined in `prompt_contexts/entity_resolution.txt` which instructs it to break the provided cluster down into sub-clusters referring to the same entity and assign each a score. If it decides the provided cluster most likely does all refer to the same entity there will be a single sub-cluster and a single confidence score for the whole set. The identity edges between each node of each sub-cluster receive an `llm_score`.  This process can be run with a command such as the following
+
+    python llm_resolve.py --score-min 0.97 --name-score-min 0.97 --neighbor-score-min 0.5
 
 #### Destructive Identity Cluster Collapsing
 

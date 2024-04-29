@@ -10,7 +10,8 @@ st.title("Andy")
 if "conversation" not in st.session_state:
     st.session_state.conversation =\
         SQLConversation(st.connection("snowflake"), pc.Pinecone(api_key=st.secrets.PINECONE_API_KEY),
-                                                    api_key=st.secrets.OPENAI_API_KEY)#, model="gpt-3.5-turbo")
+                                                    api_key=st.azure.api_key,
+                        azure_endpoint=st.azure.endpoint)#, model="gpt-3.5-turbo")
 
 # Ask for user input
 if prompt := st.chat_input():
