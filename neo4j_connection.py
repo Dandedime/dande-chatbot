@@ -22,15 +22,11 @@ class Neo4jConnection:
         if self.__driver is not None:
             self.__driver.close()
 
-    def query(self, query, parameters=None, db=None, unpack=True):
+    def query(self, query, parameters=None, db=None):
         session = self._get_session()
-        response = session.run(query, parameters)
+        response = list(session.run(query, parameters))
         if session is not None:
             session.close()
-        if unpack:
-            return list(response)
-        else:
-            return response
 
     def create_node(self, entity: Entity):
         session = self._get_session()
