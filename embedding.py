@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import re
 import numpy as np
