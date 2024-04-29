@@ -1,0 +1,29 @@
+select t.amount, t.transactiondate, case when
+n.firstname is null then n.lastname else trim(concat(n.lastname, ' ',
+IFNULL(n.suffix, ''), ', ', n.firstname, ' ',
+IFNULL(n.middlename, '')))
+end as contributor_name, n.lastname as contributor_lname, trim(n.firstname) as
+contributor_fname, n.middlename as contributor_mname, n.suffix as
+contributor_suffix, n.address1 as contributor_address1, n.address2 as
+contributor_address2, n.city as contributor_city, n.state as
+contributor_state, n.zipcode as contributor_zipcode, n.occupation as
+contributor_occupation, n.employer as contributor_employer, case when
+n.firstname is null and n.middlename is null and n.lastname ilike '%pac%' then 'pac' when
+n.firstname is null and n.middlename is null then 'org' else 'individual' end as contributor_type,
+case when n2.firstname is null then n2.lastname else
+trim(concat(n2.lastname, ' ', IFNULL(n2.suffix, ''), ', ',
+n2.firstname, ' ',
+IFNULL(n2.middlename, ''))) end as recipient_name, n2.lastname as
+recipient_lname, trim(n2.firstname) as recipient_fname, n2.middlename as
+recipient_mname, n2.suffix as recipient_suffix, n2.address1 as
+recipient_address1, n2.address2 as recipient_address2, n2.city as
+recipient_city, n2.state as recipient_state, n2.zipcode as
+recipient_zipcode, n2.occupation as recipient_occupation, n2.employer as
+recipient_employer, case when n2.firstname is null and n2.middlename is
+null and n2.lastname ilike
+'%pac%' then 'pac' when n2.firstname is null and n2.middlename is null then 'org' else 'individual'
+end as recipient_type from statedata.public.az_transactions t join
+statedata.public.az_names n on
+t.nameid=n.nameid join statedata.public.az_committees com on com.committeeid=t.committeeid
+join statedata.public.az_names n2 on com.candidatenameid=n2.nameid where com.candidatenameid
+is not null;

@@ -1,0 +1,36 @@
+{
+	"table_name": "corporate_regulatory_violations",
+	"entities": [
+		{
+			"entity_type": "corporation",
+            "fields": {
+                "corporation": {
+                    "name": "COMPANY",
+                    "parent_company": "PARENT_COMPANY",
+                    "industry": "INDUSTRY"
+                }
+            }
+		},
+		{
+			"entity_type": "agency",
+            "fields": {
+                "agency": {
+                    "name": "AGENCY"
+                }
+            }
+		}
+	],
+	"relationships":[
+		{
+			"relationship_type": "violation",
+            "fields": {
+                "violation_type": "OFFENSE_TYPE",
+                "year": "YEAR",
+                "amount": "AMOUNT"
+            },
+            "source_entity": 0,
+            "terminal_entity": 1
+		}
+	]
+}
+

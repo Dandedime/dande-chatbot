@@ -1,0 +1,38 @@
+{
+	"entities": [
+		{
+			"entity_type": "individual",
+       			"fields": {
+				 "individual":
+				 {
+				     "name": "CONTRIBUTOR_NAME",
+				     "address": "ADDRESS",
+				     "state": "STATE",
+				     "zipcode": "ZIP",
+				     "occupation": "OCCUPATION"
+				}
+			 }
+		},
+		{
+			"entity_type": "individual",
+            "fields": {
+				 "individual":
+				 {
+				     "name": "RECIPIENT_NAME"
+				}
+			 }
+		}
+	],
+	"relationships":[
+		{
+			"relationship_type": "contribution",
+			 "fields": {
+			     "amount": "AMOUNT",
+			     "date": "RECEIVED_DATE"
+			 },
+			 "source_entity": 0,
+			 "terminal_entity": 1
+	    
+		}
+	]
+}

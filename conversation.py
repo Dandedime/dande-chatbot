@@ -1,7 +1,9 @@
 from pathlib import Path
-from openai import OpenAI
+from openai import AzureOpenAI
 from build_prompts import SystemPrompt, SQLPrompt, TableSelectionPrompt
 from constants import TABLE_PATH_DICT
+from rag import PineconeIndex
+from typing import List
 import re
 
 def unique_messages(func):
@@ -15,8 +17,11 @@ def unique_messages(func):
     return wrapper
 
 class ConversationOpenAI:
-    def __init__(self, api_key, model="gpt-4-0125-preview", system_prompt=None, memory_window=5):
-        self.client = OpenAI(api_key=api_key)
+    def __init__(self, api_key, azure_endpoint, api_version,
+                 model="entity_resolution", system_prompt=None, memory_window=5):
+        self.client = AzureOpenAI(api_key=api_key,
+                                  api_version=api_version,
+                                  azure_endpoint=azure_endpoint)
         self.model = model
         self.history = ConversationHistory(system_prompt=system_prompt, window=memory_window)
 
@@ -29,9 +34,19 @@ class ConversationOpenAI:
             stream=True
         )
 
+class PineconeConversation(ConversationOpenAI):
+   
+    def __init__(self, api_key, azure_endpoint, api_version, model="gpt-4-0125-preview", memory_window=5): 
+        self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/entity_resolution.txt"))) 
+        super().__init__(api_key, azure_endpoint, api_version, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
 
+    def find_match(self, query: str, candidates: List[str]) -> List[str]:
+        content = self.system_prompt.general_instructions.format(entity=query, candidates=candidates)
+        return self.respond([{"role": "system", "content": content}])
+    
 class SQLConversation(ConversationOpenAI):
-    def __init__(self, db_conn, api_key, model="gpt-4-0125-preview", memory_window=5):
+    def __init__(self, db_conn, pinecone_conn, api_key, azure_endpoint,
+                 api_version, model="gpt-4-0125-preview", memory_window=5):
         self.db_conn = db_conn
 
         self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
@@ -42,10 +57,11 @@ class SQLConversation(ConversationOpenAI):
                                                     Path("table_contexts/candidates.txt"), 
                                                     Path("table_contexts/election_contributions.txt"),
                                                     Path("table_contexts/pacs_to_candidates.txt")])                                                   
+        self.proper_nouns = PineconeIndex(pinecone_conn, "proper-nouns")
 
         self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/initial.txt")))
 
-        super().__init__(api_key, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
+        super().__init__(api_key, azure_endpoint, api_version, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
 
     def write_query(self, table_selection = None):
         """Construct a sql query an explanation given the current conversation"""
@@ -61,6 +77,9 @@ class SQLConversation(ConversationOpenAI):
         question = user_message["content"]
         content = self.table_selector.general_instructions + f"\nuser_message: {question}"
         return self.respond([{"role": "system", "content": content}])
+    
+    def verify_proper_nouns(self, query):
+        return self.proper_nouns.get_similiar(query)
 
     def execute_query(self, response):
         """Execute the sql query in the response text if there is one"""
@@ -85,8 +104,14 @@ class SQLConversation(ConversationOpenAI):
         return self.respond([{"role": "system", "content": content}])
     
     def empty(self, user_message, query, results):
+        proper_noun_suggestions = \
+            ", ".join(self.verify_proper_nouns(user_message["content"]))
         question = user_message["content"]
-        content = self.empty_prompt.general_instructions.format(question=question, query=query, results=results)
+        content = \
+            self.empty_prompt.general_instructions.format(question=question,
+                                                      query=query,
+                                                      results=results,
+                                                      suggestions=proper_noun_suggestions)
         return self.respond([{"role": "system", "content": content}])
 
     @staticmethod
@@ -133,5 +158,3 @@ class ConversationHistory:
 
     def __getitem__(self, idx):
         return self.messages[idx]
-    
-

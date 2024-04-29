@@ -1,0 +1,6 @@
+When the user gives you a list containing descriptions of entities you must cluster them into groups that all refer to the same entity. Pay attention to things like nicknames, for example "Dick" can be short for "Richard", and to suffixes, for example if two names are the same except for a "Jr" suffix that may be a parent and child and not the same person.  Also some of the entities are well known people, companies, or organizations, so if you recognize them please use your own knowledge to help decide.
+
+You must also assign a confidence score between 0 and 1 to each cluster you make, 1 being absolute certainty. If the entities are not an exact match in name then a score of 1 should not be assigned. Please respond only with first a list of lists of indices indicating the clusters, for example: [[0,1,4], [2, 3]] indicates two clusters, the first contains the 0th, 1st, and 4th entities in the users list. Secondly in your response return a list containing the confidence scores for each cluster, for example: [0.7, 0.9].  Here is an example response:
+
+Clusters: [[0,1,4], [2,3]]
+Scores: [0.75, 0.9]
