@@ -22,7 +22,15 @@ By default it will run chatbot version that connects to neo4j, but an argument o
 
 The chatbot performs best when the user queries are clear and specific and utilize language it is already to use to. For example, using the names of the entity types (like "individual", "organization", "corporation") and relationship types (like "contribution" and "violation") that it is familiar with can help make the intent more apparent.
 
+## Chatbot prompts
+
+Prompts used by the chatbot live in `prompt_contexts/`. For example the prompt used for doing LLM-based entity resolution is `prompt_contexts/entity_resolution.txt` or for the neo4j chatbot is `prompt_contexts/neo4j.txt`. Prompts can easily be edited by editing these text files.  `build_prompts.py` contains python classes for loading and handling these prompts. `conversation.py` contains python classes for handling conversations that use these prompts.
+
 # Neo4j
+
+## Data classes
+
+`data_structures/classes.py` defines standard data types that will be used in neo4j. For example there are classes for Individual, Corporation, and Organization as well as for relationships like Contribution, Identity, and Violation. These classes define the properties for each data type that will be placed in neo4j (things like name, address, date, etc). They also handle how to convert an instance of these data types into a text description that will be embedded for entity resolution.
 
 ## Populating neo4j graph db
 
@@ -131,7 +139,11 @@ Here we see that if the column in the table called `CONTRIBUTOR_TYPE` has value 
 
 Using the entity embedder which leverages a text embedding model from Hugging Face to separately embed the entire description of an entity and just the name of the entity, an overall score and a name score is assigned to each potential entity match. Theresholds for score and name score  can be set above which an identity relationship is added between the entities. Additional thresholds are set for each above which nodes are destructively collapsed into each other, preserving any relationships to other nodes.  These values can be adjusted when running the script as
 
-    python populate_neo4j.py --table-key PATH_TO_JSON --score-min 0.97 --name-score-min 0.98 --score-collapse-min 0.99 --name-score-collapse-min -.99
+    python populate_neo4j.py --table-key PATH_TO_JSON --score-min 0.97 --name-score-min 0.98 --score-collapse-min 0.99 --name-score-collapse-min 0.99
+
+#### Embedding
+
+Currently the text descriptions of entities are embedded via a model from HuggingFace. The custom embedding defined in `embedding.py` uses this model to separately embed a text description stating the entity type and its name and the text describing the values of the entity's properties. These two vectors are concatenated to form a single embedding. This separation is done so that we can compute an overall embedding similarity score and a name-specific score to put separate cosntraints on each. No matter how similiar the properties of two entities are, if their name and entity type are not sufficiently similar then they are very unlikely to refer to the same entity.
 
 #### Neighbor Score
 
@@ -147,4 +159,4 @@ Additional analysis to support entity resolution can be performed using an LLM. 
 
 At any time further destructuve consolidation of entities can be performed using whatever perscribed score conditions. For example
 
-    python resolve.py --score-min 0.97 --name-score-min 0.98 --neighbor-score-min 0.5 --llm-score-min 0.8
+    python resolve.py --score-min 0.97 --name-score-min 0.98 --llm-score-min 0.8
