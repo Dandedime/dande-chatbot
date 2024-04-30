@@ -10,9 +10,17 @@ Requirements can be installed by running
 
 ## Running the chatbot
 
-`streamlit run dande_app.py`
+To run the chatbot locally
+
+`streamlit run dandy_app.py`
+
+By default it will run chatbot version that connects to neo4j, but an argument of `sql` can be included to have it run with snowflake
+
+`streamlit run dandy_app.py sql`
 
 ## Using the chatbot
+
+The chatbot performs best when the user queries are clear and specific and utilize language it is already to use to. For example, using the names of the entity types (like "individual", "organization", "corporation") and relationship types (like "contribution" and "violation") that it is familiar with can help make the intent more apparent.
 
 # Neo4j
 
