@@ -32,7 +32,8 @@ def select_tables(conversation: SQLConversation):
     query_explanation = conversation.select_tables(user_message)
     response = ""
     for chunk in query_explanation:
-        response += (chunk.choices[0].delta.content or "")
+        if len(chunk.choices):
+            response += (chunk.choices[0].delta.content or "")
     response = [x.lstrip(" ").lstrip(".").rstrip(".") for x in response.split(",")]
     return [s.translate(str.maketrans('', '', ",")) for s in response]
 
@@ -40,7 +41,8 @@ def find_pinecone_match(conversation: PineconeConversation, query: str, candidat
     query_explanation = conversation.find_match(query, candidates)
     response = ""
     for chunk in query_explanation:
-        response += (chunk.choices[0].delta.content or "")
+        if len(chunk.choices):
+            response += (chunk.choices[0].delta.content or "")
     response = [x for x in response if x in "0123456789"]
     return "".join(response)
     

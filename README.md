@@ -32,7 +32,9 @@ To run a table through this pipeline use the following command
 
     python populate_neo4j.py --table-key PATH_TO_KEY_JSON --csv_file OPTIONAL_PATH_TO_CSV
 
-If a csv_file is provided any query present in the table key will be ignored in favor of using the data in the csv.
+If a csv_file is provided any query present in the table key will be ignored in favor of using the data in the csv. I've found it's more convenient to use csv_files for continuing the pipeline if the connection fails part way through. Snowlfake query results do not have a deterministic order so it's more challenging to continue in those cases. To continue with a csv file we can use the `row_index` argument to specify the row number of the csv to start at
+
+    python populate_neo4j.py --table-key PATH_TO_KEY_JSON --csv_file PATH_TO_CSV --row_index START_ROW_INDEX
 
 ### Table Keys
 
