@@ -36,7 +36,8 @@ class ConversationOpenAI:
 
 class PineconeConversation(ConversationOpenAI):
    
-    def __init__(self, api_key, azure_endpoint, api_version, model="gpt-4-0125-preview", memory_window=5): 
+    def __init__(self, api_key, azure_endpoint, api_version,
+                 model="entity_resolution", memory_window=5): 
         self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/entity_resolution.txt"))) 
         super().__init__(api_key, azure_endpoint, api_version, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
 
@@ -46,7 +47,7 @@ class PineconeConversation(ConversationOpenAI):
     
 class SQLConversation(ConversationOpenAI):
     def __init__(self, db_conn, pinecone_conn, api_key, azure_endpoint,
-                 api_version, model="gpt-4-0125-preview", memory_window=5):
+                 api_version, model="entity_resolution", memory_window=5):
         self.db_conn = db_conn
 
         self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
@@ -55,8 +56,7 @@ class SQLConversation(ConversationOpenAI):
     
         self.table_selector = TableSelectionPrompt.from_file(table_files=[Path("table_contexts/violations.txt"), 
                                                     Path("table_contexts/candidates.txt"), 
-                                                    Path("table_contexts/election_contributions.txt"),
-                                                    Path("table_contexts/pacs_to_candidates.txt")])                                                   
+                                                    Path("table_contexts/election_contributions.txt"), Path("table_contexts/pacs_to_candidates.txt")])
         self.proper_nouns = PineconeIndex(pinecone_conn, "proper-nouns")
 
         self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/initial.txt")))
@@ -121,6 +121,63 @@ class SQLConversation(ConversationOpenAI):
         if sql_match:
             sql = sql_match.group(1)
             return sql
+
+
+class Neo4jConversation(ConversationOpenAI):
+    def __init__(self, db_conn, api_key, azure_endpoint,
+                 api_version, model="entity_resolution", memory_window=5):
+        self.db_conn = db_conn
+
+        self.answer_prompt = SystemPrompt.from_file(Path("prompt_contexts/answer.txt"))
+        self.error_prompt = SystemPrompt.from_file(Path("prompt_contexts/error.txt"))
+        self.empty_prompt = SystemPrompt.from_file(Path("prompt_contexts/empty.txt"))
+        self.system_prompt = SystemPrompt.from_file((Path("prompt_contexts/neo4j.txt")))
+
+        super().__init__(api_key, azure_endpoint, api_version, model, system_prompt=self.system_prompt.general_instructions, memory_window=memory_window)
+
+    def write_query(self, table_selection = None):
+        """Construct a sql query an explanation given the current conversation"""
+        return self.respond()
+
+    def execute_query(self, response):
+        """Execute the cypher query in the response text if there is one"""
+        query = self._extract_query(response)
+        if query is not None:
+            try:
+                res = self.db_conn.query(query)
+                return query, res, None
+            except Exception as e:
+                return query, None, e
+        else:
+            return None, None, None
+
+    def answer(self, query, results):
+        """Construct an answer to the question in the user_message given the sql query in results of the query"""
+        content = self.answer_prompt.general_instructions.format(query=query, results=results)
+        return self.respond(self.history.recent_conversation + [{"role": "system", "content": content}])
+    
+    def error(self, user_message, query, status):
+        question = user_message["content"]
+        content = self.error_prompt.general_instructions.format(question=question, query=query, error=status)
+        return self.respond([{"role": "system", "content": content}])
+    
+    def empty(self, user_message, query, results):
+        proper_noun_suggestions = \
+            ", ".join(self.verify_proper_nouns(user_message["content"]))
+        question = user_message["content"]
+        content = \
+            self.empty_prompt.general_instructions.format(question=question,
+                                                      query=query,
+                                                      results=results,
+                                                      suggestions=proper_noun_suggestions)
+        return self.respond([{"role": "system", "content": content}])
+
+    def _extract_query(self, response):
+            """Extract neo4j query from response text"""
+            neo4j_match = re.search(r"```cypher\n(.*)\n```", response, re.DOTALL)
+            if neo4j_match:
+                neo4j = neo4j_match.group(1)
+                return neo4j
 
 
 class ConversationHistory:

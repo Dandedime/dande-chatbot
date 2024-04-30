@@ -10,9 +10,17 @@ Requirements can be installed by running
 
 ## Running the chatbot
 
-`streamlit run dande_app.py`
+To run the chatbot locally
+
+`streamlit run dandy_app.py`
+
+By default it will run chatbot version that connects to neo4j, but an argument of `sql` can be included to have it run with snowflake
+
+`streamlit run dandy_app.py sql`
 
 ## Using the chatbot
+
+The chatbot performs best when the user queries are clear and specific and utilize language it is already to use to. For example, using the names of the entity types (like "individual", "organization", "corporation") and relationship types (like "contribution" and "violation") that it is familiar with can help make the intent more apparent.
 
 # Neo4j
 
@@ -24,7 +32,9 @@ To run a table through this pipeline use the following command
 
     python populate_neo4j.py --table-key PATH_TO_KEY_JSON --csv_file OPTIONAL_PATH_TO_CSV
 
-If a csv_file is provided any query present in the table key will be ignored in favor of using the data in the csv.
+If a csv_file is provided any query present in the table key will be ignored in favor of using the data in the csv. I've found it's more convenient to use csv_files for continuing the pipeline if the connection fails part way through. Snowlfake query results do not have a deterministic order so it's more challenging to continue in those cases. To continue with a csv file we can use the `row_index` argument to specify the row number of the csv to start at
+
+    python populate_neo4j.py --table-key PATH_TO_KEY_JSON --csv_file PATH_TO_CSV --row_index START_ROW_INDEX
 
 ### Table Keys
 

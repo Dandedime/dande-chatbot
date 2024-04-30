@@ -27,6 +27,7 @@ class Neo4jConnection:
         response = list(session.run(query, parameters))
         if session is not None:
             session.close()
+        return response
 
     def create_node(self, entity: Entity):
         session = self._get_session()
